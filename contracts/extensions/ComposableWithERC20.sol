@@ -7,7 +7,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 abstract contract ComposableWithERC20 is Composable {
     using SafeERC20 for IERC20;
 
-    mapping(address => mapping(uint256 => uint256)) _balances;
+    // (token => erc20 balance)
+    mapping(address => mapping(uint256 => mapping(address => uint256))) _balances;
 
     function linkERC20(
         address erc20Address,
@@ -22,8 +23,14 @@ abstract contract ComposableWithERC20 is Composable {
 
         IERC20(erc20Address).safeTransferFrom(msg.sender, address(this), value);
 
-        uint256 oldBalance = _balances[targetTokenAddress][targetTokenId];
-        _balances[targetTokenAddress][targetTokenId] = oldBalance + value;
+        uint256 oldBalance = balanceOfERC20(
+            targetTokenAddress,
+            targetTokenId,
+            erc20Address
+        );
+        _balances[targetTokenAddress][targetTokenId][erc20Address] =
+            oldBalance +
+            value;
     }
 
     function updateERC20Target(
@@ -52,15 +59,28 @@ abstract contract ComposableWithERC20 is Composable {
             "caller not owner of source token"
         );
         require(
-            _balances[sourceTokenAddress][sourceTokenId] >= value,
+            balanceOfERC20(sourceTokenAddress, sourceTokenId, erc20Address) >=
+                value,
             "transfer amount exceeds balance"
         );
 
-        uint256 oldSourceBalance = _balances[sourceTokenAddress][sourceTokenId];
-        _balances[sourceTokenAddress][sourceTokenId] = oldSourceBalance - value;
+        uint256 oldSourceBalance = balanceOfERC20(
+            sourceTokenAddress,
+            sourceTokenId,
+            erc20Address
+        );
+        _balances[sourceTokenAddress][sourceTokenId][erc20Address] =
+            oldSourceBalance -
+            value;
 
-        uint256 oldTargetBalance = _balances[targetTokenAddress][targetTokenId];
-        _balances[targetTokenAddress][targetTokenId] = oldTargetBalance + value;
+        uint256 oldTargetBalance = balanceOfERC20(
+            targetTokenAddress,
+            targetTokenId,
+            erc20Address
+        );
+        _balances[targetTokenAddress][targetTokenId][erc20Address] =
+            oldTargetBalance +
+            value;
     }
 
     function unlinkERC20(
@@ -83,20 +103,28 @@ abstract contract ComposableWithERC20 is Composable {
             "caller not owner of target token"
         );
         require(
-            balanceOfERC20(targetTokenAddress, targetTokenId) >= value,
+            balanceOfERC20(targetTokenAddress, targetTokenId, erc20Address) >=
+                value,
             "transfer amount exceeds balance"
         );
 
-        uint256 oldBalance = _balances[targetTokenAddress][targetTokenId];
-        _balances[targetTokenAddress][targetTokenId] = oldBalance - value;
+        uint256 oldBalance = balanceOfERC20(
+            targetTokenAddress,
+            targetTokenId,
+            erc20Address
+        );
+        _balances[targetTokenAddress][targetTokenId][erc20Address] =
+            oldBalance -
+            value;
 
         IERC20(erc20Address).safeTransfer(to, value);
     }
 
-    function balanceOfERC20(address targetTokenAddress, uint256 targetTokenId)
-        public
-        returns (uint256 balance)
-    {
-        balance = _balances[targetTokenAddress][targetTokenId];
+    function balanceOfERC20(
+        address targetTokenAddress,
+        uint256 targetTokenId,
+        address erc20Address
+    ) public returns (uint256 balance) {
+        balance = _balances[targetTokenAddress][targetTokenId][erc20Address];
     }
 }
