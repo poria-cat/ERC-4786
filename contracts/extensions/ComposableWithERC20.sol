@@ -13,72 +13,55 @@ abstract contract ComposableWithERC20 is Composable {
     function linkERC20(
         address erc20Address,
         uint256 value,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory targetToken
     ) external {
         require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
+            _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
 
         IERC20(erc20Address).safeTransferFrom(msg.sender, address(this), value);
 
-        uint256 oldBalance = balanceOfERC20(
-            targetTokenAddress,
-            targetTokenId,
-            erc20Address
-        );
-        _balances[targetTokenAddress][targetTokenId][erc20Address] =
+        uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
+        _balances[targetToken.tokenAddress][targetToken.tokenId][erc20Address] =
             oldBalance +
             value;
     }
 
     function updateERC20Target(
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
         address erc20Address,
         uint256 value,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
     ) public {
         require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
+            _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
         require(
-            _checkItemsExists(sourceTokenAddress, sourceTokenId),
+            _checkItemsExists(sourceToken),
             "source/child token token not in contract"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-            sourceTokenAddress,
-            sourceTokenId
+            sourceToken
         );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
         );
         require(
-            balanceOfERC20(sourceTokenAddress, sourceTokenId, erc20Address) >=
-                value,
+            balanceOfERC20(sourceToken, erc20Address) >= value,
             "transfer amount exceeds balance"
         );
 
-        uint256 oldSourceBalance = balanceOfERC20(
-            sourceTokenAddress,
-            sourceTokenId,
-            erc20Address
-        );
-        _balances[sourceTokenAddress][sourceTokenId][erc20Address] =
+        uint256 oldSourceBalance = balanceOfERC20(sourceToken, erc20Address);
+        _balances[sourceToken.tokenAddress][sourceToken.tokenId][erc20Address] =
             oldSourceBalance -
             value;
 
-        uint256 oldTargetBalance = balanceOfERC20(
-            targetTokenAddress,
-            targetTokenId,
-            erc20Address
-        );
-        _balances[targetTokenAddress][targetTokenId][erc20Address] =
+        uint256 oldTargetBalance = balanceOfERC20(targetToken, erc20Address);
+        _balances[targetToken.tokenAddress][targetToken.tokenId][erc20Address] =
             oldTargetBalance +
             value;
     }
@@ -87,33 +70,26 @@ abstract contract ComposableWithERC20 is Composable {
         address to,
         address erc20Address,
         uint256 value,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory targetToken
     ) public {
         require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
+            _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-            targetTokenAddress,
-            targetTokenId
+            targetToken
         );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of target token"
         );
         require(
-            balanceOfERC20(targetTokenAddress, targetTokenId, erc20Address) >=
-                value,
+            balanceOfERC20(targetToken, erc20Address) >= value,
             "transfer amount exceeds balance"
         );
 
-        uint256 oldBalance = balanceOfERC20(
-            targetTokenAddress,
-            targetTokenId,
-            erc20Address
-        );
-        _balances[targetTokenAddress][targetTokenId][erc20Address] =
+        uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
+        _balances[targetToken.tokenAddress][targetToken.tokenId][erc20Address] =
             oldBalance -
             value;
 
@@ -121,10 +97,11 @@ abstract contract ComposableWithERC20 is Composable {
     }
 
     function balanceOfERC20(
-        address targetTokenAddress,
-        uint256 targetTokenId,
+        ERC721Token memory targetToken,
         address erc20Address
     ) public returns (uint256 balance) {
-        balance = _balances[targetTokenAddress][targetTokenId][erc20Address];
+        balance = _balances[targetToken.tokenAddress][targetToken.tokenId][
+            erc20Address
+        ];
     }
 }
