@@ -58,7 +58,7 @@ abstract contract ComposableWithERC1155 is Composable {
             targetTokenId
         );
         require(
-            ERC721(targetTokenAddress).ownerOf(rootTokenId) == msg.sender,
+            ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of target token"
         );
         require(
@@ -99,7 +99,7 @@ abstract contract ComposableWithERC1155 is Composable {
             sourceTokenId
         );
         require(
-            ERC721(sourceTokenAddress).ownerOf(rootTokenId) == msg.sender,
+            ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
         );
 
