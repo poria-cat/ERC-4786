@@ -5,13 +5,16 @@ import "../Composable.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 abstract contract ComposableWithERC1155 is Composable {
+    struct ERC1155Token {
+        address tokenAddress;
+        uint256 tokenId;
+    }
     // token => erc1155 => balance
     // mapping(address => mapping(uint256 => mapping (address => mapping(uint256 => uint256))) _balances;
     mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) _balances;
 
     function linkERC1155(
-        address erc1155Address,
-        uint256 erc1155TokenId,
+        ERC1155Token memory sourceToken,
         uint256 amount,
         address targetTokenAddress,
         uint256 targetTokenId
@@ -21,10 +24,10 @@ abstract contract ComposableWithERC1155 is Composable {
             "target/parent token token not in contract"
         );
 
-        IERC1155(erc1155Address).safeTransferFrom(
+        IERC1155(sourceToken.tokenAddress).safeTransferFrom(
             msg.sender,
             address(this),
-            erc1155TokenId,
+            sourceToken.tokenId,
             amount,
             ""
         );
@@ -32,18 +35,16 @@ abstract contract ComposableWithERC1155 is Composable {
         uint256 oldAmount = balanceOfERC1155(
             targetTokenAddress,
             targetTokenId,
-            erc1155Address,
-            erc1155TokenId
+            sourceToken
         );
-        _balances[targetTokenAddress][targetTokenId][erc1155Address][
-            erc1155TokenId
+        _balances[targetTokenAddress][targetTokenId][sourceToken.tokenAddress][
+            sourceToken.tokenId
         ] = oldAmount + amount;
     }
 
     function unlinkERC1155(
         address to,
-        address erc1155Address,
-        uint256 erc1155TokenId,
+        ERC1155Token memory sourceToken,
         uint256 amount,
         address targetTokenAddress,
         uint256 targetTokenId
@@ -61,31 +62,25 @@ abstract contract ComposableWithERC1155 is Composable {
             "caller not owner of target token"
         );
         require(
-            balanceOfERC1155(
-                targetTokenAddress,
-                targetTokenId,
-                erc1155Address,
-                erc1155TokenId
-            ) >= amount,
+            balanceOfERC1155(targetTokenAddress, targetTokenId, sourceToken) >=
+                amount,
             "transfer amount exceeds balance"
         );
 
         uint256 oldAmount = balanceOfERC1155(
             targetTokenAddress,
             targetTokenId,
-            erc1155Address,
-            erc1155TokenId
+            sourceToken
         );
-        _balances[targetTokenAddress][targetTokenId][erc1155Address][
-            erc1155TokenId
+        _balances[targetTokenAddress][targetTokenId][sourceToken.tokenAddress][
+            sourceToken.tokenId
         ] = oldAmount - amount;
     }
 
     function updateERC1155Target(
         address sourceTokenAddress,
         uint256 sourceTokenId,
-        address erc1155Address,
-        uint256 erc1155TokenId,
+        ERC1155Token memory sourceERC1155,
         uint256 amount,
         address targetTokenAddress,
         uint256 targetTokenId
@@ -111,35 +106,32 @@ abstract contract ComposableWithERC1155 is Composable {
         uint256 oldSourceBalance = balanceOfERC1155(
             sourceTokenAddress,
             sourceTokenId,
-            erc1155Address,
-            erc1155TokenId
+            sourceERC1155
         );
 
         require(oldSourceBalance >= amount, "transfer amount exceeds balance");
 
-        _balances[sourceTokenAddress][sourceTokenId][erc1155Address][
-            erc1155TokenId
-        ] = oldSourceBalance - amount;
+        _balances[sourceTokenAddress][sourceTokenId][
+            sourceERC1155.tokenAddress
+        ][sourceERC1155.tokenId] = oldSourceBalance - amount;
 
         uint256 oldTargetBalance = balanceOfERC1155(
             targetTokenAddress,
             targetTokenId,
-            erc1155Address,
-            erc1155TokenId
+            sourceERC1155
         );
-        _balances[targetTokenAddress][targetTokenId][erc1155Address][
-            erc1155TokenId
-        ] = oldTargetBalance + amount;
+        _balances[targetTokenAddress][targetTokenId][
+            sourceERC1155.tokenAddress
+        ][sourceERC1155.tokenId] = oldTargetBalance + amount;
     }
 
     function balanceOfERC1155(
         address targetTokenAddress,
         uint256 targetTokenId,
-        address erc1155Address,
-        uint256 erc1155TokenId
+        ERC1155Token memory sourceToken
     ) public returns (uint256 balance) {
-        balance = _balances[targetTokenAddress][targetTokenId][erc1155Address][
-            erc1155TokenId
-        ];
+        balance = _balances[targetTokenAddress][targetTokenId][
+            sourceToken.tokenAddress
+        ][sourceToken.tokenId];
     }
 }
