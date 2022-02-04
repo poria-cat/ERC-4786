@@ -9,9 +9,8 @@ abstract contract ComposableWithERC20 is Composable {
 
     mapping(address => mapping(uint256 => uint256)) _balances;
 
-    // can also be linkERC20
-    function linkFungible(
-        address fungibleTokenAddress,
+    function linkERC20(
+        address erc20Address,
         uint256 value,
         address targetTokenAddress,
         uint256 targetTokenId
@@ -21,20 +20,16 @@ abstract contract ComposableWithERC20 is Composable {
             "target/parent token token not in contract"
         );
 
-        IERC20(fungibleTokenAddress).safeTransferFrom(
-            msg.sender,
-            address(this),
-            value
-        );
+        IERC20(erc20Address).safeTransferFrom(msg.sender, address(this), value);
 
         uint256 oldBalance = _balances[targetTokenAddress][targetTokenId];
         _balances[targetTokenAddress][targetTokenId] = oldBalance + value;
     }
 
-    function updateFungibleTarget(
+    function updateERC20Target(
         address sourceTokenAddress,
         uint256 sourceTokenId,
-        address fungibleTokenAddress,
+        address erc20Address,
         uint256 value,
         address targetTokenAddress,
         uint256 targetTokenId
@@ -57,7 +52,7 @@ abstract contract ComposableWithERC20 is Composable {
             "caller not owner of source token"
         );
         require(
-            balanceOfFungible(sourceTokenAddress, sourceTokenId) >= value,
+            _balances[sourceTokenAddress][sourceTokenId] >= value,
             "transfer amount exceeds balance"
         );
 
@@ -68,9 +63,9 @@ abstract contract ComposableWithERC20 is Composable {
         _balances[targetTokenAddress][targetTokenId] = oldTargetBalance + value;
     }
 
-    function unlinkFungible(
+    function unlinkERC20(
         address to,
-        address fungibleTokenAddress,
+        address erc20Address,
         uint256 value,
         address targetTokenAddress,
         uint256 targetTokenId
@@ -88,20 +83,20 @@ abstract contract ComposableWithERC20 is Composable {
             "caller not owner of target token"
         );
         require(
-            balanceOfFungible(targetTokenAddress, targetTokenId) >= value,
+            balanceOfERC20(targetTokenAddress, targetTokenId) >= value,
             "transfer amount exceeds balance"
         );
 
         uint256 oldBalance = _balances[targetTokenAddress][targetTokenId];
         _balances[targetTokenAddress][targetTokenId] = oldBalance - value;
 
-        IERC20(fungibleTokenAddress).safeTransfer(to, value);
+        IERC20(erc20Address).safeTransfer(to, value);
     }
 
-    function balanceOfFungible(
-        address targetTokenAddress,
-        uint256 targetTokenId
-    ) public returns (uint256 balance) {
+    function balanceOfERC20(address targetTokenAddress, uint256 targetTokenId)
+        public
+        returns (uint256 balance)
+    {
         balance = _balances[targetTokenAddress][targetTokenId];
     }
 }
