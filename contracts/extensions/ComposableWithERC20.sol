@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL3.0
 pragma solidity ^0.8.0;
 
-import "./Composable.sol";
+import "../Composable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 abstract contract ComposableWithERC20 is Composable {
     using SafeERC20 for IERC20;
 
     mapping(address => mapping(uint256 => uint256)) _balances;
-
+    // can also be linkERC20
     function linkFungible(
         address fungibleTokenAddress,
         uint256 value,

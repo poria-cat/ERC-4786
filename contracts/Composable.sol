@@ -82,81 +82,6 @@ contract Composable is ERC721 {
         }
     }
 
-    // not allow link this contract's NFT to another NFT
-    function _receiveSourceToken(
-        address source,
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        address targetTokenAddress,
-        uint256 targetTokenId
-    ) private {
-        _beforeReceive(
-            source,
-            sourceTokenAddress,
-            sourceTokenId,
-            targetTokenAddress,
-            targetTokenId
-        );
-        // To prevent malicious use, it is prohibited to associate NFTs that are not in the contract
-        require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
-            "target/parent token not exist"
-        );
-        require(
-            _target[sourceTokenAddress][sourceTokenId].tokenAddress ==
-                address(0),
-            "source/child token has already been received"
-        );
-
-        require(
-            ERC721(sourceTokenAddress).ownerOf(sourceTokenId) == address(this),
-            "this contract is not owner of source/child token"
-        );
-        _addSource(
-            sourceTokenAddress,
-            sourceTokenId,
-            targetTokenAddress,
-            targetTokenId
-        );
-
-        _target[sourceTokenAddress][sourceTokenId] = TargetToken(
-            targetTokenAddress,
-            targetTokenId
-        );
-    }
-
-    function onERC721Received(
-        address operator,
-        address source,
-        uint256 tokenId,
-        bytes memory data
-    ) public returns (bytes4) {
-        require(
-            data.length > 0,
-            "data must contain the uint256 tokenId to transfer the source/child token to."
-        );
-
-        (address targetTokenAddress, uint256 targetTokenId) = abi.decode(
-            data,
-            (address, uint256)
-        );
-
-        require(
-            targetTokenAddress != address(0),
-            "target/parent token address should not be address(0)"
-        );
-
-        _receiveSourceToken(
-            source,
-            msg.sender,
-            tokenId,
-            targetTokenAddress,
-            targetTokenId
-        );
-
-        return IERC721Receiver.onERC721Received.selector;
-    }
-
     function findRootToken(address sourceTokenAddress, uint256 sourceTokenId)
         public
         view
@@ -189,57 +114,102 @@ contract Composable is ERC721 {
         tokenId = p.tokenId;
     }
 
-    // not allow link this contract's NFT to another NFT
     function link(
         address sourceTokenAddress,
         uint256 sourceTokenId,
         address targetTokenAddress,
         uint256 targetTokenId
     ) public {
-        // check child token address whether in contract, if not in, should check child owner, if in contract, should check root owner
-        if (
-            _checkItemsExists(sourceTokenAddress, sourceTokenId) &&
-            sourceTokenAddress != address(this)
-        ) {
-            // To prevent malicious use of the contract,
-            // it is not possible to associate tokens that are not in the contract
-            // (except for those already in the contract)
-            require(
-                _checkItemsExists(targetTokenAddress, targetTokenId),
-                "target/parent token token not in contract"
-            );
+        require(
+            targetTokenAddress != address(0),
+            "target/parent token address should not be address(0)"
+        );
 
-            (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-                sourceTokenAddress,
-                sourceTokenId
-            );
-            // maybe root token source other contract NFT, so use down code
-            require(
-                ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
-                "caller is not owner of source/child token"
-            );
+        _beforeLink(
+            msg.sender,
+            sourceTokenAddress,
+            sourceTokenId,
+            targetTokenAddress,
+            targetTokenId
+        );
+        // To prevent malicious use, it is prohibited to associate NFTs that are not in the contract
+        require(
+            _checkItemsExists(targetTokenAddress, targetTokenId),
+            "target/parent token not exist"
+        );
+        require(
+            _target[sourceTokenAddress][sourceTokenId].tokenAddress ==
+                address(0),
+            "source/child token has already been received"
+        );
 
-            _addSource(
-                sourceTokenAddress,
-                sourceTokenId,
-                targetTokenAddress,
-                targetTokenId
-            );
+        ERC721(sourceTokenAddress).transferFrom(
+            msg.sender,
+            address(this),
+            sourceTokenId
+        );
 
-            _target[sourceTokenAddress][sourceTokenId] = TargetToken(
-                targetTokenAddress,
-                targetTokenId
-            );
-        } else {
-            // on receive data: 1. parent address 2. parent tokenId
-            // because receiveChild will use _checkItemsExists to check to Token, so not check here
-            ERC721(sourceTokenAddress).safeTransferFrom(
-                msg.sender,
-                address(this),
-                sourceTokenId,
-                abi.encode(targetTokenAddress, targetTokenId)
-            );
-        }
+        _addSource(
+            sourceTokenAddress,
+            sourceTokenId,
+            targetTokenAddress,
+            targetTokenId
+        );
+
+        _target[sourceTokenAddress][sourceTokenId] = TargetToken(
+            targetTokenAddress,
+            targetTokenId
+        );
+    }
+
+    function updateTarget(
+        address sourceTokenAddress,
+        uint256 sourceTokenId,
+        address targetTokenAddress,
+        uint256 targetTokenId
+    ) public {
+        require(
+            targetTokenAddress != address(0),
+            "target/parent token address should not be address(0)"
+        );
+
+        _beforeUpdateTarget(
+            sourceTokenAddress,
+            sourceTokenId,
+            targetTokenAddress,
+            targetTokenId
+        );
+
+        require(
+            _checkItemsExists(sourceTokenAddress, sourceTokenId),
+            "source/child token not in contract"
+        );
+        require(
+            _checkItemsExists(targetTokenAddress, targetTokenId),
+            "target/parent token token not in contract"
+        );
+
+        (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
+            sourceTokenAddress,
+            sourceTokenId
+        );
+        // maybe root token source other contract NFT, so use down code
+        require(
+            ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
+            "caller is not owner of source/child token"
+        );
+
+        _addSource(
+            sourceTokenAddress,
+            sourceTokenId,
+            targetTokenAddress,
+            targetTokenId
+        );
+
+        _target[sourceTokenAddress][sourceTokenId] = TargetToken(
+            targetTokenAddress,
+            targetTokenId
+        );
     }
 
     function unlink(
@@ -288,17 +258,26 @@ contract Composable is ERC721 {
     }
 
     function _beforeLink(
+        address from,
         address sourceTokenAddress,
         uint256 sourceTokenId,
         address targetTokenAddress,
         uint256 targetTokenId
     ) internal virtual {}
 
-    function _beforeReceive(
-        address source,
+    function _beforeUpdateTarget(
         address sourceTokenAddress,
         uint256 sourceTokenId,
         address targetTokenAddress,
         uint256 targetTokenId
     ) internal virtual {}
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4) {
+        return this.onERC721Received.selector;
+    }
 }
