@@ -79,38 +79,6 @@ contract Composable is ERC721 {
         }
     }
 
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes memory data
-    ) public returns (bytes4) {
-        require(
-            data.length > 0,
-            "data must contain the uint256 tokenId to transfer the child token to."
-        );
-
-        (address parentTokenAddress, uint256 parentTokenId) = abi.decode(
-            data,
-            (address, uint256)
-        );
-
-        require(
-            parentTokenAddress != address(0),
-            "parent token address should not be address(0)"
-        );
-
-        _receiveChild(
-            from,
-            msg.sender,
-            tokenId,
-            parentTokenAddress,
-            parentTokenId
-        );
-
-        return IERC721Receiver.onERC721Received.selector;
-    }
-
     // not allow link this contract's NFT to another NFT
     function _receiveChild(
         address from,
@@ -146,6 +114,38 @@ contract Composable is ERC721 {
             toTokenAddress,
             toTokenId
         );
+    }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes memory data
+    ) public returns (bytes4) {
+        require(
+            data.length > 0,
+            "data must contain the uint256 tokenId to transfer the child token to."
+        );
+
+        (address parentTokenAddress, uint256 parentTokenId) = abi.decode(
+            data,
+            (address, uint256)
+        );
+
+        require(
+            parentTokenAddress != address(0),
+            "parent token address should not be address(0)"
+        );
+
+        _receiveChild(
+            from,
+            msg.sender,
+            tokenId,
+            parentTokenAddress,
+            parentTokenId
+        );
+
+        return IERC721Receiver.onERC721Received.selector;
     }
 
     function findRootToken(address childTokenAddress, uint256 childTokenId)
@@ -188,7 +188,10 @@ contract Composable is ERC721 {
         uint256 toTokenId
     ) public {
         // check child token address whether in contract, if not in, should check child owner, if in contract, should check root owner
-        if (_checkItemsExists(childTokenAddress, childTokenId) && childTokenAddress != address(this)) {
+        if (
+            _checkItemsExists(childTokenAddress, childTokenId) &&
+            childTokenAddress != address(this)
+        ) {
             // To prevent malicious use of the contract,
             // it is not possible to associate tokens that are not in the contract
             // (except for those already in the contract)
@@ -230,7 +233,7 @@ contract Composable is ERC721 {
         }
     }
 
-    function transferChild(
+    function unlink(
         address to,
         address childTokenAddress,
         uint256 childTokenId

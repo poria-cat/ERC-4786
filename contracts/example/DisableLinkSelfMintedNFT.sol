@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL3.0
 pragma solidity ^0.8.0;
 
-import "../ComposableNFT.sol";
+import "../Composable.sol";
 
 contract DisableLinkSelfMintedNFT is Composable {
     constructor(string memory _tokenName, string memory _tokenSymbol)

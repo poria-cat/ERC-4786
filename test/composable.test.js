@@ -50,7 +50,7 @@ describe("Test Composable", function () {
         expect(root[1]).to.be.eq(BigNumber.from(testTokenId1));
     });
 
-    it("transfer child", async function () {
+    it("unlink", async function () {
         const testTokenId0 = 0;
         const testTokenId1 = 1;
 
@@ -73,7 +73,7 @@ describe("Test Composable", function () {
         // parent NFT 1 => test NFT 0 => test NFT 1
         await composable.link(testNFT.address, testTokenId1, testNFT.address, testTokenId0);
 
-        await composable.transferChild(accounts[1].address, testNFT.address, testTokenId1);
+        await composable.unlink(accounts[1].address, testNFT.address, testTokenId1);
     });
 
     it("try transfer token minted by composable", async function () {
