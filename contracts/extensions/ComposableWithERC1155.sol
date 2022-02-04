@@ -81,6 +81,57 @@ abstract contract ComposableWithERC1155 is Composable {
         ] = oldAmount - amount;
     }
 
+    function updateERC1155Target(
+        address sourceTokenAddress,
+        uint256 sourceTokenId,
+        address erc1155Address,
+        uint256 erc1155TokenId,
+        uint256 amount,
+        address targetTokenAddress,
+        uint256 targetTokenId
+    ) public {
+        require(
+            _checkItemsExists(targetTokenAddress, targetTokenId),
+            "target/parent token token not in contract"
+        );
+        require(
+            _checkItemsExists(sourceTokenAddress, sourceTokenId),
+            "source/child token token not in contract"
+        );
+
+        (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
+            sourceTokenAddress,
+            sourceTokenId
+        );
+        require(
+            ERC721(sourceTokenAddress).ownerOf(rootTokenId) == msg.sender,
+            "caller not owner of source token"
+        );
+
+        uint256 oldSourceBalance = balanceOfERC1155(
+            sourceTokenAddress,
+            sourceTokenId,
+            erc1155Address,
+            erc1155TokenId
+        );
+
+        require(oldSourceBalance >= amount, "transfer amount exceeds balance");
+
+        _balances[sourceTokenAddress][sourceTokenId][erc1155Address][
+            erc1155TokenId
+        ] = oldSourceBalance - amount;
+
+        uint256 oldTargetBalance = balanceOfERC1155(
+            targetTokenAddress,
+            targetTokenId,
+            erc1155Address,
+            erc1155TokenId
+        );
+        _balances[targetTokenAddress][targetTokenId][erc1155Address][
+            erc1155TokenId
+        ] = oldTargetBalance + amount;
+    }
+
     function balanceOfERC1155(
         address targetTokenAddress,
         uint256 targetTokenId,
