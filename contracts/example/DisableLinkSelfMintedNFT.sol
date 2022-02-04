@@ -18,16 +18,12 @@ contract DisableLinkSelfMintedNFT is Composable {
 
     function _beforeLink(
         address from,
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        address targetTokenAddress,
-        uint256 targetTokenId
-    ) internal virtual override canNotLink(sourceTokenAddress) {}
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
+    ) internal virtual override canNotLink(sourceToken.tokenAddress) {}
 
     function _beforeUpdateTarget(
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        address targetTokenAddress,
-        uint256 targetTokenId
-    ) internal virtual override canNotLink(sourceTokenAddress) {}
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
+    ) internal virtual override canNotLink(sourceToken.tokenAddress) {}
 }

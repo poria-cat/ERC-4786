@@ -14,7 +14,7 @@ contract Composable is ERC721 {
 
     Counters.Counter private _lastTokenId;
 
-    struct TargetToken {
+    struct ERC721Token {
         address tokenAddress;
         uint256 tokenId;
     }
@@ -23,7 +23,7 @@ contract Composable is ERC721 {
     // target: ending node, parent node
 
     //target/parent(one to one): ((source/child token address + id) -> (target/parent token address  + target/parent id))
-    mapping(address => mapping(uint256 => TargetToken)) _target;
+    mapping(address => mapping(uint256 => ERC721Token)) _target;
     // source/child(one to many): (target/parent token address + id => Set(keccak256(abi.encode(target/parent tokenaddress , target/parent id))))
     mapping(address => mapping(uint256 => EnumerableSet.Bytes32Set)) _source;
 
@@ -32,47 +32,46 @@ contract Composable is ERC721 {
     {}
 
     function _addSource(
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
     ) private {
         // (address targetTokenAddress, uint256 targetTokenId) = getTarget(
         //     sourceTokenAddress,
         //     sourceTokenId
         // );
-        bytes32 sourceToken = keccak256(
-            abi.encode(sourceTokenAddress, sourceTokenId)
+        bytes32 _sourceToken = keccak256(
+            abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
         );
-        if (targetTokenAddress != address(0)) {
-            _source[targetTokenAddress][targetTokenId].remove(sourceToken);
+        if (targetToken.tokenAddress != address(0)) {
+            _source[targetToken.tokenAddress][targetToken.tokenId].remove(
+                _sourceToken
+            );
         }
-        _source[targetTokenAddress][targetTokenId].add(sourceToken);
+        _source[targetToken.tokenAddress][targetToken.tokenId].add(
+            _sourceToken
+        );
     }
 
-    function _checkItemsExists(address tokenAddress, uint256 tokenId)
+    function _checkItemsExists(ERC721Token memory token)
         public
         view
         returns (bool)
     {
-        if (tokenAddress == address(this)) {
+        if (token.tokenAddress == address(this)) {
             // just check id existed
-            return _exists(tokenId);
+            return _exists(token.tokenId);
         }
 
-        (address targetTokenAddress, ) = getTarget(tokenAddress, tokenId);
+        (address targetTokenAddress, ) = getTarget(token);
 
         // may be a root token, should check have source/child token or not
         if (targetTokenAddress == address(0)) {
             // if token have no source/child token, it not in this contract(and it also not a root token)
-            return _source[tokenAddress][tokenId].length() > 0;
+            return _source[token.tokenAddress][token.tokenId].length() > 0;
         }
 
         // check whether root token in contract
-        (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-            tokenAddress,
-            tokenId
-        );
+        (address rootTokenAddress, uint256 rootTokenId) = findRootToken(token);
 
         if (rootTokenAddress == address(this)) {
             return _exists(rootTokenId);
@@ -82,116 +81,93 @@ contract Composable is ERC721 {
         }
     }
 
-    function findRootToken(address sourceTokenAddress, uint256 sourceTokenId)
+    function findRootToken(ERC721Token memory token)
         public
         view
         returns (address rootTokenAddress, uint256 rootTokenId)
     {
-        (address targetTokenAddress, uint256 targetTokenId) = getTarget(
-            sourceTokenAddress,
-            sourceTokenId
-        );
+        (address targetTokenAddress, uint256 targetTokenId) = getTarget(token);
 
         while (
             !(targetTokenAddress == address(0) ||
                 targetTokenAddress == address(this))
         ) {
             (targetTokenAddress, targetTokenId) = getTarget(
-                targetTokenAddress,
-                targetTokenId
+                ERC721Token(targetTokenAddress, targetTokenId)
             );
         }
         return (targetTokenAddress, targetTokenId);
     }
 
-    function getTarget(address sourceTokenAddress, uint256 sourceTokenId)
+    function getTarget(ERC721Token memory sourceToken)
         public
         view
         returns (address tokenAddress, uint256 tokenId)
     {
-        TargetToken memory p = _target[sourceTokenAddress][sourceTokenId];
-        tokenAddress = p.tokenAddress;
-        tokenId = p.tokenId;
+        ERC721Token memory t = _target[sourceToken.tokenAddress][
+            sourceToken.tokenId
+        ];
+        tokenAddress = t.tokenAddress;
+        tokenId = t.tokenId;
     }
 
     function link(
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
     ) public {
         require(
-            targetTokenAddress != address(0),
+            targetToken.tokenAddress != address(0),
             "target/parent token address should not be address(0)"
         );
 
-        _beforeLink(
-            msg.sender,
-            sourceTokenAddress,
-            sourceTokenId,
-            targetTokenAddress,
-            targetTokenId
-        );
+        _beforeLink(msg.sender, sourceToken, targetToken);
         // To prevent malicious use, it is prohibited to associate NFTs that are not in the contract
         require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
+            _checkItemsExists(targetToken),
             "target/parent token not exist"
         );
         require(
-            _target[sourceTokenAddress][sourceTokenId].tokenAddress ==
-                address(0),
+            _target[sourceToken.tokenAddress][sourceToken.tokenId]
+                .tokenAddress == address(0),
             "source/child token has already been received"
         );
 
-        ERC721(sourceTokenAddress).transferFrom(
+        ERC721(sourceToken.tokenAddress).transferFrom(
             msg.sender,
             address(this),
-            sourceTokenId
+            sourceToken.tokenId
         );
 
-        _addSource(
-            sourceTokenAddress,
-            sourceTokenId,
-            targetTokenAddress,
-            targetTokenId
-        );
+        _addSource(sourceToken, targetToken);
 
-        _target[sourceTokenAddress][sourceTokenId] = TargetToken(
-            targetTokenAddress,
-            targetTokenId
+        _target[sourceToken.tokenAddress][sourceToken.tokenId] = ERC721Token(
+            targetToken.tokenAddress,
+            targetToken.tokenId
         );
     }
 
     function updateTarget(
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
     ) public {
         require(
-            targetTokenAddress != address(0),
+            targetToken.tokenAddress != address(0),
             "target/parent token address should not be address(0)"
         );
 
-        _beforeUpdateTarget(
-            sourceTokenAddress,
-            sourceTokenId,
-            targetTokenAddress,
-            targetTokenId
-        );
+        _beforeUpdateTarget(sourceToken, targetToken);
 
         require(
-            _checkItemsExists(sourceTokenAddress, sourceTokenId),
+            _checkItemsExists(sourceToken),
             "source/child token not in contract"
         );
         require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
+            _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-            sourceTokenAddress,
-            sourceTokenId
+            sourceToken
         );
         // maybe root token source other contract NFT, so use down code
         require(
@@ -199,33 +175,23 @@ contract Composable is ERC721 {
             "caller is not owner of source/child token"
         );
 
-        _addSource(
-            sourceTokenAddress,
-            sourceTokenId,
-            targetTokenAddress,
-            targetTokenId
-        );
+        _addSource(sourceToken, targetToken);
 
-        _target[sourceTokenAddress][sourceTokenId] = TargetToken(
-            targetTokenAddress,
-            targetTokenId
+        _target[sourceToken.tokenAddress][sourceToken.tokenId] = ERC721Token(
+            targetToken.tokenAddress,
+            targetToken.tokenId
         );
     }
 
-    function unlink(
-        address to,
-        address sourceTokenAddress,
-        uint256 sourceTokenId
-    ) public {
-        // require(sourceTokenAddress != address(this), "not child token");
+    function unlink(address to, ERC721Token memory sourceToken) public {
+        // require(sourceToken.tokenAddress != address(this), "not child token");
         require(
-            _checkItemsExists(sourceTokenAddress, sourceTokenId),
+            _checkItemsExists(sourceToken),
             "source/child token not in contract"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-            sourceTokenAddress,
-            sourceTokenId
+            sourceToken
         );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
@@ -233,21 +199,20 @@ contract Composable is ERC721 {
         );
 
         (address targetTokenAddress, uint256 targetTokenId) = getTarget(
-            sourceTokenAddress,
-            sourceTokenId
+            sourceToken
         );
 
-        bytes32 sourceToken = keccak256(
-            abi.encode(sourceTokenAddress, sourceTokenId)
+        bytes32 _sourceToken = keccak256(
+            abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
         );
-        _source[targetTokenAddress][targetTokenId].remove(sourceToken);
+        _source[targetTokenAddress][targetTokenId].remove(_sourceToken);
 
-        delete _target[sourceTokenAddress][sourceTokenId];
+        delete _target[sourceToken.tokenAddress][sourceToken.tokenId];
 
-        ERC721(sourceTokenAddress).safeTransferFrom(
+        ERC721(sourceToken.tokenAddress).safeTransferFrom(
             address(this),
             to,
-            sourceTokenId
+            sourceToken.tokenId
         );
     }
 
@@ -259,17 +224,13 @@ contract Composable is ERC721 {
 
     function _beforeLink(
         address from,
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
     ) internal virtual {}
 
     function _beforeUpdateTarget(
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
     ) internal virtual {}
 
     function onERC721Received(

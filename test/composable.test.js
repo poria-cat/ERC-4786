@@ -41,12 +41,12 @@ describe("Test Composable", function () {
             true
         );
         // parent NFT 1 => test NFT 0
-        await composable.link(testNFT.address, testTokenId0, composable.address, linkedTokenId1);
+        await composable.link([testNFT.address, testTokenId0], [composable.address, linkedTokenId1]);
         // parent NFT 1 => test NFT 0 => test NFT 1
-        await composable.link(testNFT.address, testTokenId1, testNFT.address, testTokenId0);
+        await composable.link([testNFT.address, testTokenId1], [testNFT.address, testTokenId0]);
 
 
-        const root = await composable.findRootToken(testNFT.address, testTokenId0);
+        const root = await composable.findRootToken([testNFT.address, testTokenId0]);
         expect(root[1]).to.be.eq(BigNumber.from(testTokenId1));
     });
 
@@ -69,11 +69,11 @@ describe("Test Composable", function () {
             true
         );
         // parent NFT 1 => test NFT 0
-        await composable.link(testNFT.address, testTokenId0, composable.address, linkedTokenId1);
+        await composable.link([testNFT.address, testTokenId0], [composable.address, linkedTokenId1]);
         // parent NFT 1 => test NFT 0 => test NFT 1
-        await composable.link(testNFT.address, testTokenId1, testNFT.address, testTokenId0);
+        await composable.link([testNFT.address, testTokenId1], [testNFT.address, testTokenId0]);
 
-        await composable.unlink(accounts[1].address, testNFT.address, testTokenId1);
+        await composable.unlink(accounts[1].address, [testNFT.address, testTokenId1]);
     });
 
     it("try transfer token minted by composable", async function () {
@@ -88,7 +88,7 @@ describe("Test Composable", function () {
             true
         );
 
-        await composable.link(composable.address, linkedTokenId1, composable.address, linkedTokenId0);
+        await composable.link([composable.address, linkedTokenId1], [composable.address, linkedTokenId0]);
     })
 
 });

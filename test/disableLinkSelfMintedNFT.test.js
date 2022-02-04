@@ -35,7 +35,7 @@ describe("Test DisableLinkSelfMintedNFT", function () {
             true
         );
 
-        await expect(disableLinkSelfMintedNFT.link(disableLinkSelfMintedNFT.address, linkedTokenId1, disableLinkSelfMintedNFT.address, linkedTokenId0)).to.be.revertedWith(
+        await expect(disableLinkSelfMintedNFT.link([disableLinkSelfMintedNFT.address, linkedTokenId1], [disableLinkSelfMintedNFT.address, linkedTokenId0])).to.be.revertedWith(
             "can't link this NFT to another NFT"
         );
     })
