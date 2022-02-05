@@ -92,9 +92,7 @@ describe("Test Composable", function () {
                 true
             );
 
-
             await composable.safeMint(accounts[0].address);
-
             await expect(composable.link([testNFT.address, testTokenId0], [testNFT.address, testTokenId1])).to.be.revertedWith(
                 "target/parent token not exist in contract"
             );
@@ -120,6 +118,35 @@ describe("Test Composable", function () {
 
             await composable.unlink(accounts[1].address, [testNFT.address, testTokenId1]);
         });
+
+        it("can't unlink not own", async function () {
+            await composable.safeMint(accounts[0].address);
+
+            await testNFT.safeMint(accounts[0].address);
+            await testNFT.setApprovalForAll(
+                composable.address,
+                true
+            );
+
+            await composable.link([testNFT.address, testTokenId0], [composable.address, linkedTokenId0]);
+            await expect(composable.connect(accounts[1]).unlink(accounts[1].address, [testNFT.address, testTokenId0])).to.be.revertedWith(
+                "caller is not owner of source/child token"
+            );
+        })
+
+        it("can't link not exists in contract's nft", async function () {
+            await composable.safeMint(accounts[0].address);
+
+            await testNFT.safeMint(accounts[0].address);
+            await testNFT.setApprovalForAll(
+                composable.address,
+                true
+            );
+
+            await expect(composable.unlink(accounts[0].address, [testNFT.address, testTokenId0])).to.be.revertedWith(
+                "source/child token not in contract"
+            );
+        })
     })
 
 
