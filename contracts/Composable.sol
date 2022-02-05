@@ -62,22 +62,33 @@ contract Composable is ERC721 {
             return _exists(token.tokenId);
         }
 
-        (address targetTokenAddress, ) = getTarget(token);
+        (address targetTokenAddress, uint256 targetTokenId) = getTarget(token);
 
         // may be a root token, should check have source/child token or not
         if (targetTokenAddress == address(0)) {
             // if token have no source/child token, it not in this contract(and it also not a root token)
             return _source[token.tokenAddress][token.tokenId].length() > 0;
+        } else {
+            // target parent is not address(0), so it should have child/source token
+            return _source[targetTokenAddress][targetTokenId].length() > 0;
         }
 
         // check whether root token in contract
-        (address rootTokenAddress, uint256 rootTokenId) = findRootToken(token);
+        // (address rootTokenAddress, uint256 rootTokenId) = findRootToken(token);
+        // return _checkRootExists(ERC721Token(rootTokenAddress, rootTokenId));
+    }
 
-        if (rootTokenAddress == address(this)) {
-            return _exists(rootTokenId);
+    function _checkRootExists(ERC721Token memory rootToken)
+        public
+        view
+        returns (bool)
+    {
+        if (rootToken.tokenAddress == address(this)) {
+            return _exists(rootToken.tokenId);
         } else {
             // root token is not source this contract, so check it have source/child or not
-            return _source[rootTokenAddress][rootTokenId].length() > 0;
+            return
+                _source[rootToken.tokenAddress][rootToken.tokenId].length() > 0;
         }
     }
 
