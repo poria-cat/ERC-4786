@@ -14,124 +14,111 @@ abstract contract ComposableWithERC1155 is Composable {
     mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) _balances;
 
     function linkERC1155(
-        ERC1155Token memory sourceToken,
+        ERC1155Token memory erc1155Token,
         uint256 amount,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory targetToken
     ) public {
         require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
+            _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
 
-        IERC1155(sourceToken.tokenAddress).safeTransferFrom(
+        IERC1155(erc1155Token.tokenAddress).safeTransferFrom(
             msg.sender,
             address(this),
-            sourceToken.tokenId,
+            erc1155Token.tokenId,
             amount,
             ""
         );
 
-        uint256 oldAmount = balanceOfERC1155(
-            targetTokenAddress,
-            targetTokenId,
-            sourceToken
-        );
-        _balances[targetTokenAddress][targetTokenId][sourceToken.tokenAddress][
-            sourceToken.tokenId
-        ] = oldAmount + amount;
+        uint256 oldAmount = balanceOfERC1155(targetToken, erc1155Token);
+        _setBalanceOfERC1155(targetToken, erc1155Token, oldAmount + amount);
     }
 
     function unlinkERC1155(
         address to,
-        ERC1155Token memory sourceToken,
+        ERC1155Token memory erc1155Token,
         uint256 amount,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory targetToken
     ) public {
         require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
+            _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-            targetTokenAddress,
-            targetTokenId
+            targetToken
         );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of target token"
         );
         require(
-            balanceOfERC1155(targetTokenAddress, targetTokenId, sourceToken) >=
-                amount,
+            balanceOfERC1155(targetToken, erc1155Token) >= amount,
             "transfer amount exceeds balance"
         );
 
-        uint256 oldAmount = balanceOfERC1155(
-            targetTokenAddress,
-            targetTokenId,
-            sourceToken
-        );
-        _balances[targetTokenAddress][targetTokenId][sourceToken.tokenAddress][
-            sourceToken.tokenId
-        ] = oldAmount - amount;
+        uint256 oldAmount = balanceOfERC1155(targetToken, erc1155Token);
+
+        _setBalanceOfERC1155(targetToken, erc1155Token, oldAmount - amount);
     }
 
     function updateERC1155Target(
-        address sourceTokenAddress,
-        uint256 sourceTokenId,
-        ERC1155Token memory sourceERC1155,
+        ERC1155Token memory erc1155Token,
         uint256 amount,
-        address targetTokenAddress,
-        uint256 targetTokenId
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
     ) public {
         require(
-            _checkItemsExists(targetTokenAddress, targetTokenId),
+            _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
         require(
-            _checkItemsExists(sourceTokenAddress, sourceTokenId),
+            _checkItemsExists(sourceToken),
             "source/child token token not in contract"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-            sourceTokenAddress,
-            sourceTokenId
+            sourceToken
         );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
         );
 
-        uint256 oldSourceBalance = balanceOfERC1155(
-            sourceTokenAddress,
-            sourceTokenId,
-            sourceERC1155
-        );
+        uint256 oldSourceBalance = balanceOfERC1155(sourceToken, erc1155Token);
 
         require(oldSourceBalance >= amount, "transfer amount exceeds balance");
 
-        _balances[sourceTokenAddress][sourceTokenId][
-            sourceERC1155.tokenAddress
-        ][sourceERC1155.tokenId] = oldSourceBalance - amount;
-
-        uint256 oldTargetBalance = balanceOfERC1155(
-            targetTokenAddress,
-            targetTokenId,
-            sourceERC1155
+        _setBalanceOfERC1155(
+            sourceToken,
+            erc1155Token,
+            oldSourceBalance - amount
         );
-        _balances[targetTokenAddress][targetTokenId][
-            sourceERC1155.tokenAddress
-        ][sourceERC1155.tokenId] = oldTargetBalance + amount;
+
+        uint256 oldTargetBalance = balanceOfERC1155(targetToken, erc1155Token);
+        _setBalanceOfERC1155(
+            targetToken,
+            erc1155Token,
+            oldTargetBalance + amount
+        );
+    }
+
+    function _setBalanceOfERC1155(
+        ERC721Token memory targetToken,
+        ERC1155Token memory erc1155Token,
+        uint256 amount
+    ) private {
+        _balances[targetToken.tokenAddress][targetToken.tokenId][
+            erc1155Token.tokenAddress
+        ][erc1155Token.tokenId] = amount;
     }
 
     function balanceOfERC1155(
-        address targetTokenAddress,
-        uint256 targetTokenId,
-        ERC1155Token memory sourceToken
+        ERC721Token memory targetToken,
+        ERC1155Token memory erc1155Token
     ) public returns (uint256 balance) {
-        balance = _balances[targetTokenAddress][targetTokenId][
-            sourceToken.tokenAddress
-        ][sourceToken.tokenId];
+        balance = _balances[targetToken.tokenAddress][targetToken.tokenId][
+            erc1155Token.tokenAddress
+        ][erc1155Token.tokenId];
     }
 }
