@@ -65,10 +65,7 @@ contract Composable is ERC721 {
         );
     }
 
-    function _removeTarget(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
-    ) private {
+    function _removeTarget(ERC721Token memory sourceToken) private {
         delete _target[sourceToken.tokenAddress][sourceToken.tokenId];
     }
 
@@ -211,7 +208,7 @@ contract Composable is ERC721 {
         (address _targetTokenAddress, uint256 _targetTokenId) = getTarget(
             sourceToken
         );
-        
+
         _removeSource(
             sourceToken,
             ERC721Token(_targetTokenAddress, _targetTokenId)
@@ -243,7 +240,7 @@ contract Composable is ERC721 {
             sourceToken,
             ERC721Token(targetTokenAddress, targetTokenId)
         );
-        _removeTarget(sourceToken, targetToken);
+        _removeTarget(sourceToken);
 
         ERC721(sourceToken.tokenAddress).safeTransferFrom(
             address(this),
