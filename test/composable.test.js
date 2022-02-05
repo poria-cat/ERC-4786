@@ -40,9 +40,9 @@ describe("Test Composable", function () {
             composable.address,
             true
         );
-        // parent NFT 1 => test NFT 0
+        // link test NFT 0  to target nft 1
         await composable.link([testNFT.address, testTokenId0], [composable.address, linkedTokenId1]);
-        // parent NFT 1 => test NFT 0 => test NFT 1
+        // link test nft 1 to test nft 0
         await composable.link([testNFT.address, testTokenId1], [testNFT.address, testTokenId0]);
 
 

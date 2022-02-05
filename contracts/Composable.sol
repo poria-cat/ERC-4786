@@ -35,10 +35,6 @@ contract Composable is ERC721 {
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
     ) private {
-        // (address targetTokenAddress, uint256 targetTokenId) = getTarget(
-        //     sourceTokenAddress,
-        //     sourceTokenId
-        // );
         bytes32 _sourceToken = keccak256(
             abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
         );
@@ -72,10 +68,6 @@ contract Composable is ERC721 {
             // target parent is not address(0), so it should have child/source token
             return _source[targetTokenAddress][targetTokenId].length() > 0;
         }
-
-        // check whether root token in contract
-        // (address rootTokenAddress, uint256 rootTokenId) = findRootToken(token);
-        // return _checkRootExists(ERC721Token(rootTokenAddress, rootTokenId));
     }
 
     function _checkRootExists(ERC721Token memory rootToken)
@@ -83,6 +75,10 @@ contract Composable is ERC721 {
         view
         returns (bool)
     {
+        if (rootToken.tokenAddress == address(0)) {
+            return false;
+        }
+
         if (rootToken.tokenAddress == address(this)) {
             return _exists(rootToken.tokenId);
         } else {
@@ -92,17 +88,28 @@ contract Composable is ERC721 {
         }
     }
 
+    function _haveTarget(ERC721Token memory token) private view returns (bool) {
+        (address targetTokenAddress, ) = getTarget(token);
+
+        if (targetTokenAddress == address(0)) {
+            return false;
+        }
+        return true;
+    }
+
     function findRootToken(ERC721Token memory token)
         public
         view
         returns (address rootTokenAddress, uint256 rootTokenId)
     {
+        // if it not have target token, it may be a root token
+        if (!_haveTarget(token)) {
+            return (token.tokenAddress, token.tokenId);
+        }
         (address targetTokenAddress, uint256 targetTokenId) = getTarget(token);
 
-        while (
-            !(targetTokenAddress == address(0) ||
-                targetTokenAddress == address(this))
-        ) {
+        // find token have no target
+        while (_haveTarget(ERC721Token(targetTokenAddress, targetTokenId))) {
             (targetTokenAddress, targetTokenId) = getTarget(
                 ERC721Token(targetTokenAddress, targetTokenId)
             );
