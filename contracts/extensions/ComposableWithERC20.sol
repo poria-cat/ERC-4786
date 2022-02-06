@@ -13,49 +13,50 @@ abstract contract ComposableWithERC20 is Composable {
     event ERC20Linked(
         address from,
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token targetToken
     );
     event ERC20TargetUpdated(
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token sourceToken,
         ERC721Token targetToken
     );
     event ERC20Unlinked(
         address to,
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token targetToken
     );
 
     function linkERC20(
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token memory targetToken
     ) external {
         require(
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
         );
-        _beforeLinkERC20(msg.sender, erc20Address, value, targetToken);
+        
+        _beforeLinkERC20(msg.sender, erc20Address, amount, targetToken);
 
         require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
 
-        IERC20(erc20Address).safeTransferFrom(msg.sender, address(this), value);
+        IERC20(erc20Address).safeTransferFrom(msg.sender, address(this), amount);
 
         uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
-        _updateBalanceOfERC20(targetToken, erc20Address, oldBalance + value);
+        _updateBalanceOfERC20(targetToken, erc20Address, oldBalance + amount);
 
-        emit ERC20Linked(msg.sender, erc20Address, value, targetToken);
+        emit ERC20Linked(msg.sender, erc20Address, amount, targetToken);
     }
 
     function updateERC20Target(
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
     ) public {
@@ -63,7 +64,8 @@ abstract contract ComposableWithERC20 is Composable {
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
         );
-        _beforeUpdateERC20Target(erc20Address, value, sourceToken, targetToken);
+
+        _beforeUpdateERC20Target(erc20Address, amount, sourceToken, targetToken);
 
         require(
             _checkItemsExists(targetToken),
@@ -85,32 +87,33 @@ abstract contract ComposableWithERC20 is Composable {
 
         uint256 oldSourceBalance = balanceOfERC20(sourceToken, erc20Address);
 
-        require(oldSourceBalance >= value, "transfer amount exceeds balance");
+        require(oldSourceBalance >= amount, "transfer amount exceeds balance");
 
         _updateBalanceOfERC20(
             sourceToken,
             erc20Address,
-            oldSourceBalance - value
+            oldSourceBalance - amount
         );
 
         uint256 oldTargetBalance = balanceOfERC20(targetToken, erc20Address);
         _updateBalanceOfERC20(
             targetToken,
             erc20Address,
-            oldTargetBalance + value
+            oldTargetBalance + amount
         );
 
-        emit ERC20TargetUpdated(erc20Address, value, sourceToken, targetToken);
+        emit ERC20TargetUpdated(erc20Address, amount, sourceToken, targetToken);
     }
 
     function unlinkERC20(
         address to,
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token memory targetToken
     ) public {
         require(to != address(0), "can't unlink to zero address");
-        _beforeUnlinkERC20(to, erc20Address, value, targetToken);
+
+        _beforeUnlinkERC20(to, erc20Address, amount, targetToken);
 
         require(
             _checkItemsExists(targetToken),
@@ -128,35 +131,35 @@ abstract contract ComposableWithERC20 is Composable {
 
         uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
 
-        require(oldBalance >= value, "transfer amount exceeds balance");
+        require(oldBalance >= amount, "transfer amount exceeds balance");
 
-        _updateBalanceOfERC20(targetToken, erc20Address, oldBalance - value);
+        _updateBalanceOfERC20(targetToken, erc20Address, oldBalance - amount);
 
-        IERC20(erc20Address).safeTransfer(to, value);
+        IERC20(erc20Address).safeTransfer(to, amount);
 
-        emit ERC20Unlinked(to, erc20Address, value, targetToken);
+        emit ERC20Unlinked(to, erc20Address, amount, targetToken);
     }
 
     function _updateBalanceOfERC20(
         ERC721Token memory targetToken,
         address erc20Address,
-        uint256 value
+        uint256 newBalance
     ) internal {
         _balances[targetToken.tokenAddress][targetToken.tokenId][
             erc20Address
-        ] = value;
+        ] = newBalance;
     }
 
     function _beforeLinkERC20(
         address from,
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token memory targetToken
     ) internal virtual {}
 
     function _beforeUpdateERC20Target(
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
     ) internal virtual {}
@@ -164,7 +167,7 @@ abstract contract ComposableWithERC20 is Composable {
     function _beforeUnlinkERC20(
         address to,
         address erc20Address,
-        uint256 value,
+        uint256 amount,
         ERC721Token memory targetToken
     ) internal virtual {}
 

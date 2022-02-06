@@ -31,8 +31,8 @@ abstract contract ComposableWithERC1155 is Composable {
             ""
         );
 
-        uint256 oldAmount = balanceOfERC1155(targetToken, erc1155Token);
-        _setBalanceOfERC1155(targetToken, erc1155Token, oldAmount + amount);
+        uint256 oldBalance = balanceOfERC1155(targetToken, erc1155Token);
+        _setBalanceOfERC1155(targetToken, erc1155Token, oldBalance + amount);
     }
 
     function updateERC1155Target(
@@ -94,21 +94,21 @@ abstract contract ComposableWithERC1155 is Composable {
             "caller not owner of target token"
         );
 
-        uint256 oldAmount = balanceOfERC1155(targetToken, erc1155Token);
+        uint256 oldBalance = balanceOfERC1155(targetToken, erc1155Token);
 
-        require(oldAmount >= amount, "transfer amount exceeds balance");
+        require(oldBalance >= amount, "transfer amount exceeds balance");
 
-        _setBalanceOfERC1155(targetToken, erc1155Token, oldAmount - amount);
+        _setBalanceOfERC1155(targetToken, erc1155Token, oldBalance - amount);
     }
 
     function _setBalanceOfERC1155(
         ERC721Token memory targetToken,
         ERC1155Token memory erc1155Token,
-        uint256 amount
+        uint256 newBalance
     ) private {
         _balances[targetToken.tokenAddress][targetToken.tokenId][
             erc1155Token.tokenAddress
-        ][erc1155Token.tokenId] = amount;
+        ][erc1155Token.tokenId] = newBalance;
     }
 
     function balanceOfERC1155(
