@@ -49,7 +49,7 @@ describe("Test Composable", function () {
 
 
             const root = await composable.findRootToken([testNFT.address, testTokenId0]);
-            expect(root[1]).to.be.eq(BigNumber.from(testTokenId1));
+            expect(root[1]).to.be.eq(BigNumber.from(linkedTokenId1));
         });
 
         it("can't link a NFT that is not owned", async function () {
@@ -94,7 +94,7 @@ describe("Test Composable", function () {
 
             await composable.safeMint(accounts[0].address);
             await expect(composable.link([testNFT.address, testTokenId0], [testNFT.address, testTokenId1])).to.be.revertedWith(
-                "target/parent token not exist in contract"
+                "target/parent token not in contract"
             );
         })
     })
@@ -149,17 +149,69 @@ describe("Test Composable", function () {
         })
     })
 
+    describe("Test updateTarget", async function () {
+        it("updateTarget", async function () {
+            await composable.safeMint(accounts[0].address);
+            await composable.safeMint(accounts[0].address);
 
+            await testNFT.safeMint(accounts[0].address);
+            await testNFT.safeMint(accounts[0].address);
 
-    it("try transfer token minted by composable", async function () {
-        await composable.safeMint(accounts[0].address);
-        await composable.safeMint(accounts[0].address);
-        await composable.setApprovalForAll(
-            composable.address,
-            true
-        );
+            await testNFT.setApprovalForAll(
+                composable.address,
+                true
+            );
+            // link test NFT 0  to target nft 1
+            await composable.link([testNFT.address, testTokenId0], [composable.address, linkedTokenId1]);
 
-        await composable.link([composable.address, linkedTokenId1], [composable.address, linkedTokenId0]);
+            let root = await composable.findRootToken([testNFT.address, testTokenId0]);
+
+            expect(root[0]).to.be.eq(composable.address);
+            expect(root[1]).to.be.eq(BigNumber.from(linkedTokenId1));
+
+            await composable.updateTarget([testNFT.address, testTokenId0], [composable.address, linkedTokenId0])
+
+            root = await composable.findRootToken([testNFT.address, testTokenId0]);
+
+            expect(root[0]).to.be.eq(composable.address);
+            expect(root[1]).to.be.eq(BigNumber.from(linkedTokenId0));
+        })
+
+        it("can't updateTarget to nft that not exist in contract", async function () {
+            await composable.safeMint(accounts[0].address);
+            await composable.safeMint(accounts[0].address);
+
+            await testNFT.safeMint(accounts[0].address);
+            await testNFT.safeMint(accounts[0].address);
+
+            await testNFT.setApprovalForAll(
+                composable.address,
+                true
+            );
+
+            await composable.link([testNFT.address, testTokenId0], [composable.address, linkedTokenId1]);
+            // await composable.updateTarget([testNFT.address, testTokenId0], [testNFT.address, testTokenId1])
+            await expect(composable.updateTarget([testNFT.address, testTokenId0], [testNFT.address, testTokenId1])).to.be.revertedWith(
+                "target/parent token not in contract"
+            );
+        })
+
+        it("can't updateTarget with not own", async function () {
+            await composable.safeMint(accounts[0].address);
+            await composable.safeMint(accounts[0].address);
+
+            await testNFT.safeMint(accounts[0].address);
+
+            await testNFT.setApprovalForAll(
+                composable.address,
+                true
+            );
+
+            await composable.link([testNFT.address, testTokenId0], [composable.address, linkedTokenId1]);
+
+            expect(composable.connect(accounts[1]).updateTarget([testNFT.address, testTokenId0], [composable.address, linkedTokenId0])).to.be.revertedWith(
+                "caller is not owner of source/child token"
+            );
+        })
     })
-
 });
