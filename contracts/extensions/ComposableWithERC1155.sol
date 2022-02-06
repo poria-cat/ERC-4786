@@ -10,7 +10,7 @@ abstract contract ComposableWithERC1155 is Composable, IComposableWithERC1155 {
    
     // token => erc1155 => balance
     // mapping(address => mapping(uint256 => mapping (address => mapping(uint256 => uint256))) _balances;
-    mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) _balances;
+    mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) _balancesOfERC1155;
 
     function supportsInterface(bytes4 interfaceId)
         public
@@ -131,7 +131,7 @@ abstract contract ComposableWithERC1155 is Composable, IComposableWithERC1155 {
         ERC1155Token memory erc1155Token,
         uint256 newBalance
     ) private {
-        _balances[targetToken.tokenAddress][targetToken.tokenId][
+        _balancesOfERC1155[targetToken.tokenAddress][targetToken.tokenId][
             erc1155Token.tokenAddress
         ][erc1155Token.tokenId] = newBalance;
     }
@@ -140,7 +140,7 @@ abstract contract ComposableWithERC1155 is Composable, IComposableWithERC1155 {
         ERC721Token memory targetToken,
         ERC1155Token memory erc1155Token
     ) public view returns (uint256 balance) {
-        balance = _balances[targetToken.tokenAddress][targetToken.tokenId][
+        balance = _balancesOfERC1155[targetToken.tokenAddress][targetToken.tokenId][
             erc1155Token.tokenAddress
         ][erc1155Token.tokenId];
     }

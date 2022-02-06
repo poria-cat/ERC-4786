@@ -10,7 +10,7 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
     using SafeERC20 for IERC20;
 
     // (token => erc20 balance)
-    mapping(address => mapping(uint256 => mapping(address => uint256))) _balances;
+    mapping(address => mapping(uint256 => mapping(address => uint256))) ;
 
     function supportsInterface(bytes4 interfaceId)
         public
@@ -149,7 +149,7 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         address erc20Address,
         uint256 newBalance
     ) internal {
-        _balances[targetToken.tokenAddress][targetToken.tokenId][
+        _balancesOfERC20[targetToken.tokenAddress][targetToken.tokenId][
             erc20Address
         ] = newBalance;
     }
@@ -179,7 +179,7 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         ERC721Token memory targetToken,
         address erc20Address
     ) public view returns (uint256 balance) {
-        balance = _balances[targetToken.tokenAddress][targetToken.tokenId][
+        balance = _balancesOfERC20[targetToken.tokenAddress][targetToken.tokenId][
             erc20Address
         ];
     }
