@@ -23,9 +23,7 @@ abstract contract ComposableWithERC20 is Composable {
         IERC20(erc20Address).safeTransferFrom(msg.sender, address(this), value);
 
         uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
-        _balances[targetToken.tokenAddress][targetToken.tokenId][erc20Address] =
-            oldBalance +
-            value;
+        _updateBalanceOfERC20(targetToken, erc20Address, oldBalance + value);
     }
 
     function updateERC20Target(
@@ -56,14 +54,18 @@ abstract contract ComposableWithERC20 is Composable {
         );
 
         uint256 oldSourceBalance = balanceOfERC20(sourceToken, erc20Address);
-        _balances[sourceToken.tokenAddress][sourceToken.tokenId][erc20Address] =
-            oldSourceBalance -
-            value;
+        _updateBalanceOfERC20(
+            sourceToken,
+            erc20Address,
+            oldSourceBalance - value
+        );
 
         uint256 oldTargetBalance = balanceOfERC20(targetToken, erc20Address);
-        _balances[targetToken.tokenAddress][targetToken.tokenId][erc20Address] =
-            oldTargetBalance +
-            value;
+        _updateBalanceOfERC20(
+            targetToken,
+            erc20Address,
+            oldTargetBalance + value
+        );
     }
 
     function unlinkERC20(
@@ -89,11 +91,19 @@ abstract contract ComposableWithERC20 is Composable {
         );
 
         uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
-        _balances[targetToken.tokenAddress][targetToken.tokenId][erc20Address] =
-            oldBalance -
-            value;
+        _updateBalanceOfERC20(targetToken, erc20Address, oldBalance - value);
 
         IERC20(erc20Address).safeTransfer(to, value);
+    }
+
+    function _updateBalanceOfERC20(
+        ERC721Token memory targetToken,
+        address erc20Address,
+        uint256 value
+    ) internal {
+        _balances[targetToken.tokenAddress][targetToken.tokenId][
+            erc20Address
+        ] = value;
     }
 
     function balanceOfERC20(
