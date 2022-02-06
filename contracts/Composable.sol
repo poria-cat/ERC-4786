@@ -54,7 +54,7 @@ contract Composable is ERC721 {
     function _removeSource(
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
-    ) private {
+    ) internal {
         bytes32 _sourceToken = keccak256(
             abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
         );
@@ -66,19 +66,19 @@ contract Composable is ERC721 {
     function _addTarget(
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
-    ) private {
+    ) internal {
         _target[sourceToken.tokenAddress][sourceToken.tokenId] = ERC721Token(
             targetToken.tokenAddress,
             targetToken.tokenId
         );
     }
 
-    function _removeTarget(ERC721Token memory sourceToken) private {
+    function _removeTarget(ERC721Token memory sourceToken) internal {
         delete _target[sourceToken.tokenAddress][sourceToken.tokenId];
     }
 
     function _checkItemsExists(ERC721Token memory token)
-        public
+        internal
         view
         returns (bool)
     {
@@ -100,7 +100,7 @@ contract Composable is ERC721 {
     }
 
     function _checkRootExists(ERC721Token memory rootToken)
-        public
+        internal
         view
         returns (bool)
     {
@@ -117,7 +117,7 @@ contract Composable is ERC721 {
         }
     }
 
-    function _haveTarget(ERC721Token memory token) private view returns (bool) {
+    function _haveTarget(ERC721Token memory token) internal view returns (bool) {
         (address targetTokenAddress, ) = getTarget(token);
 
         if (targetTokenAddress == address(0)) {
@@ -161,7 +161,7 @@ contract Composable is ERC721 {
     function link(
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
-    ) public {
+    ) external {
         require(
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
@@ -229,11 +229,11 @@ contract Composable is ERC721 {
         emit TargetUpdated(sourceToken, targetToken);
     }
 
-    function unlink(address to, ERC721Token memory sourceToken) public {
+    function unlink(address to, ERC721Token memory sourceToken) external {
         require(to != address(0), "can't unlink to zero address");
 
         _beforeUnlink(to, sourceToken);
-        
+
         require(
             _checkItemsExists(sourceToken),
             "source/child token not in contract"
@@ -266,7 +266,7 @@ contract Composable is ERC721 {
         emit TokenUnlinked(to, sourceToken);
     }
 
-    function safeMint(address to) public {
+    function safeMint(address to) external {
         uint256 tokenId = _lastTokenId.current();
         _lastTokenId.increment();
         _safeMint(to, tokenId);
