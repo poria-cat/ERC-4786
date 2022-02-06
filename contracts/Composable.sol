@@ -5,19 +5,17 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+
+import "./IComposable.sol";
 
 import "hardhat/console.sol";
 
-contract Composable is ERC721 {
+contract Composable is ERC721, IComposable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     Counters.Counter private _lastTokenId;
-
-    struct ERC721Token {
-        address tokenAddress;
-        uint256 tokenId;
-    }
 
     // source: starting node, child node
     // target: ending node, parent node
@@ -27,17 +25,21 @@ contract Composable is ERC721 {
     // source/child(one to many): (target/parent token address + id => Set(keccak256(abi.encode(target/parent tokenaddress , target/parent id))))
     mapping(address => mapping(uint256 => EnumerableSet.Bytes32Set)) _source;
 
-    event Linked(
-        address from,
-        ERC721Token sourceToken,
-        ERC721Token targetToken
-    );
-    event TargetUpdated(ERC721Token sourceToken, ERC721Token targetToken);
-    event Unlinked(address to, ERC721Token sourceToken);
-
     constructor(string memory _tokenName, string memory _tokenSymbol)
         ERC721(_tokenName, _tokenSymbol)
     {}
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(IERC165, ERC721)
+        returns (bool)
+    {
+        return
+            interfaceId == type(IComposable).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
 
     function _addSource(
         ERC721Token memory sourceToken,
@@ -117,7 +119,11 @@ contract Composable is ERC721 {
         }
     }
 
-    function _haveTarget(ERC721Token memory token) internal view returns (bool) {
+    function _haveTarget(ERC721Token memory token)
+        internal
+        view
+        returns (bool)
+    {
         (address targetTokenAddress, ) = getTarget(token);
 
         if (targetTokenAddress == address(0)) {
@@ -129,6 +135,7 @@ contract Composable is ERC721 {
     function findRootToken(ERC721Token memory token)
         public
         view
+        override
         returns (address rootTokenAddress, uint256 rootTokenId)
     {
         // if it not have target token, it may be a root token
@@ -149,6 +156,7 @@ contract Composable is ERC721 {
     function getTarget(ERC721Token memory sourceToken)
         public
         view
+        override
         returns (address tokenAddress, uint256 tokenId)
     {
         ERC721Token memory t = _target[sourceToken.tokenAddress][
@@ -161,7 +169,7 @@ contract Composable is ERC721 {
     function link(
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
-    ) external {
+    ) external override {
         require(
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
@@ -189,7 +197,7 @@ contract Composable is ERC721 {
     function updateTarget(
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
-    ) public {
+    ) external override {
         require(
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
@@ -229,7 +237,10 @@ contract Composable is ERC721 {
         emit TargetUpdated(sourceToken, targetToken);
     }
 
-    function unlink(address to, ERC721Token memory sourceToken) external {
+    function unlink(address to, ERC721Token memory sourceToken)
+        external
+        override
+    {
         require(to != address(0), "can't unlink to zero address");
 
         _beforeUnlink(to, sourceToken);

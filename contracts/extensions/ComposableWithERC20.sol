@@ -1,39 +1,34 @@
 // SPDX-License-Identifier: GPL3.0
 pragma solidity ^0.8.0;
 
-import "../Composable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-abstract contract ComposableWithERC20 is Composable {
+import "../Composable.sol";
+import "./IComposableWithERC20.sol";
+
+abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
     using SafeERC20 for IERC20;
 
     // (token => erc20 balance)
     mapping(address => mapping(uint256 => mapping(address => uint256))) _balances;
 
-    event ERC20Linked(
-        address from,
-        address erc20Address,
-        uint256 amount,
-        ERC721Token targetToken
-    );
-    event ERC20TargetUpdated(
-        address erc20Address,
-        uint256 amount,
-        ERC721Token sourceToken,
-        ERC721Token targetToken
-    );
-    event ERC20Unlinked(
-        address to,
-        address erc20Address,
-        uint256 amount,
-        ERC721Token targetToken
-    );
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(IERC165, Composable)
+        returns (bool)
+    {
+        return
+            interfaceId == type(IComposableWithERC20).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
 
     function linkERC20(
         address erc20Address,
         uint256 amount,
         ERC721Token memory targetToken
-    ) external {
+    ) external override {
         require(
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
@@ -63,7 +58,7 @@ abstract contract ComposableWithERC20 is Composable {
         uint256 amount,
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
-    ) public {
+    ) external override {
         require(
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
@@ -119,7 +114,7 @@ abstract contract ComposableWithERC20 is Composable {
         address erc20Address,
         uint256 amount,
         ERC721Token memory targetToken
-    ) public {
+    ) external override {
         require(to != address(0), "can't unlink to zero address");
 
         _beforeUnlinkERC20(to, erc20Address, amount, targetToken);

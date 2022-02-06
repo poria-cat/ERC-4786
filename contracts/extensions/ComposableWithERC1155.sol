@@ -1,42 +1,34 @@
 // SPDX-License-Identifier: GPL3.0
 pragma solidity ^0.8.0;
 
-import "../Composable.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
-abstract contract ComposableWithERC1155 is Composable {
-    struct ERC1155Token {
-        address tokenAddress;
-        uint256 tokenId;
-    }
+import "../Composable.sol";
+import "./IComposableWithERC1155.sol";
+
+abstract contract ComposableWithERC1155 is Composable, IComposableWithERC1155 {
+   
     // token => erc1155 => balance
     // mapping(address => mapping(uint256 => mapping (address => mapping(uint256 => uint256))) _balances;
     mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) _balances;
 
-    event ERC1155Linked(
-        address from,
-        ERC1155Token erc1155Token,
-        uint256 amount,
-        ERC721Token targetToken
-    );
-    event ERC1155TargetUpdated(
-        ERC1155Token erc1155Token,
-        uint256 amount,
-        ERC721Token sourceToken,
-        ERC721Token targetToken
-    );
-    event ERC1155Unlinked(
-        address to,
-        ERC1155Token erc1155Token,
-        uint256 amount,
-        ERC721Token targetToken
-    );
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(IERC165, Composable)
+        returns (bool)
+    {
+        return
+            interfaceId == type(ComposableWithERC1155).interfaceId ||
+            super.supportsInterface(interfaceId);
+    }
 
     function linkERC1155(
         ERC1155Token memory erc1155Token,
         uint256 amount,
         ERC721Token memory targetToken
-    ) public {
+    ) external override {
         require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
@@ -61,7 +53,7 @@ abstract contract ComposableWithERC1155 is Composable {
         uint256 amount,
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
-    ) public {
+    ) external override {
         require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
@@ -104,7 +96,7 @@ abstract contract ComposableWithERC1155 is Composable {
         ERC1155Token memory erc1155Token,
         uint256 amount,
         ERC721Token memory targetToken
-    ) public {
+    ) external override {
         require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
