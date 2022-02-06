@@ -27,13 +27,13 @@ contract Composable is ERC721 {
     // source/child(one to many): (target/parent token address + id => Set(keccak256(abi.encode(target/parent tokenaddress , target/parent id))))
     mapping(address => mapping(uint256 => EnumerableSet.Bytes32Set)) _source;
 
-    event TokenLinked(
+    event Linked(
         address from,
         ERC721Token sourceToken,
         ERC721Token targetToken
     );
     event TargetUpdated(ERC721Token sourceToken, ERC721Token targetToken);
-    event TokenUnlinked(address to, ERC721Token sourceToken);
+    event Unlinked(address to, ERC721Token sourceToken);
 
     constructor(string memory _tokenName, string memory _tokenSymbol)
         ERC721(_tokenName, _tokenSymbol)
@@ -183,7 +183,7 @@ contract Composable is ERC721 {
         _addSource(sourceToken, targetToken);
         _addTarget(sourceToken, targetToken);
 
-        emit TokenLinked(msg.sender, sourceToken, targetToken);
+        emit Linked(msg.sender, sourceToken, targetToken);
     }
 
     function updateTarget(
@@ -263,7 +263,7 @@ contract Composable is ERC721 {
             sourceToken.tokenId
         );
 
-        emit TokenUnlinked(to, sourceToken);
+        emit Unlinked(to, sourceToken);
     }
 
     function safeMint(address to) external {
