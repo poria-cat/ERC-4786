@@ -16,6 +16,11 @@ abstract contract ComposableWithERC20 is Composable {
         ERC721Token memory targetToken
     ) external {
         require(
+            targetToken.tokenAddress != address(0),
+            "target/parent token address should not be zero address"
+        );
+
+        require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
@@ -32,6 +37,11 @@ abstract contract ComposableWithERC20 is Composable {
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
     ) public {
+        require(
+            targetToken.tokenAddress != address(0),
+            "target/parent token address should not be zero address"
+        );
+
         require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
@@ -74,13 +84,16 @@ abstract contract ComposableWithERC20 is Composable {
         uint256 value,
         ERC721Token memory targetToken
     ) public {
+        require(to != address(0), "can't unlink to zero address");
         require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
+
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             targetToken
         );
+
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of target token"
