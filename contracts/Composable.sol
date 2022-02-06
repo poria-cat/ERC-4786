@@ -171,7 +171,7 @@ contract Composable is ERC721 {
         // To prevent malicious use, it is prohibited to associate NFTs that are not in the contract
         require(
             _checkItemsExists(targetToken),
-            "target/parent token not exist in contract"
+            "target/parent token not in contract"
         );
 
         ERC721(sourceToken.tokenAddress).transferFrom(
