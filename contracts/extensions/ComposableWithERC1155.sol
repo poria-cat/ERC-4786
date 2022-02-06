@@ -35,33 +35,6 @@ abstract contract ComposableWithERC1155 is Composable {
         _setBalanceOfERC1155(targetToken, erc1155Token, oldAmount + amount);
     }
 
-    function unlinkERC1155(
-        address to,
-        ERC1155Token memory erc1155Token,
-        uint256 amount,
-        ERC721Token memory targetToken
-    ) public {
-        require(
-            _checkItemsExists(targetToken),
-            "target/parent token token not in contract"
-        );
-        (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
-            targetToken
-        );
-        require(
-            ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
-            "caller not owner of target token"
-        );
-        require(
-            balanceOfERC1155(targetToken, erc1155Token) >= amount,
-            "transfer amount exceeds balance"
-        );
-
-        uint256 oldAmount = balanceOfERC1155(targetToken, erc1155Token);
-
-        _setBalanceOfERC1155(targetToken, erc1155Token, oldAmount - amount);
-    }
-
     function updateERC1155Target(
         ERC1155Token memory erc1155Token,
         uint256 amount,
@@ -101,6 +74,31 @@ abstract contract ComposableWithERC1155 is Composable {
             erc1155Token,
             oldTargetBalance + amount
         );
+    }
+
+    function unlinkERC1155(
+        address to,
+        ERC1155Token memory erc1155Token,
+        uint256 amount,
+        ERC721Token memory targetToken
+    ) public {
+        require(
+            _checkItemsExists(targetToken),
+            "target/parent token token not in contract"
+        );
+        (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
+            targetToken
+        );
+        require(
+            ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
+            "caller not owner of target token"
+        );
+
+        uint256 oldAmount = balanceOfERC1155(targetToken, erc1155Token);
+
+        require(oldAmount >= amount, "transfer amount exceeds balance");
+
+        _setBalanceOfERC1155(targetToken, erc1155Token, oldAmount - amount);
     }
 
     function _setBalanceOfERC1155(

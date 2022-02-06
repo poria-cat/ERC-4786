@@ -82,12 +82,11 @@ abstract contract ComposableWithERC20 is Composable {
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
         );
-        require(
-            balanceOfERC20(sourceToken, erc20Address) >= value,
-            "transfer amount exceeds balance"
-        );
 
         uint256 oldSourceBalance = balanceOfERC20(sourceToken, erc20Address);
+
+        require(oldSourceBalance >= value, "transfer amount exceeds balance");
+
         _updateBalanceOfERC20(
             sourceToken,
             erc20Address,
@@ -126,12 +125,11 @@ abstract contract ComposableWithERC20 is Composable {
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of target token"
         );
-        require(
-            balanceOfERC20(targetToken, erc20Address) >= value,
-            "transfer amount exceeds balance"
-        );
 
         uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
+
+        require(oldBalance >= value, "transfer amount exceeds balance");
+
         _updateBalanceOfERC20(targetToken, erc20Address, oldBalance - value);
 
         IERC20(erc20Address).safeTransfer(to, value);
