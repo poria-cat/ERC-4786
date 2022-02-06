@@ -10,6 +10,25 @@ abstract contract ComposableWithERC20 is Composable {
     // (token => erc20 balance)
     mapping(address => mapping(uint256 => mapping(address => uint256))) _balances;
 
+    event ERC20Linked(
+        address from,
+        address erc20Address,
+        uint256 value,
+        ERC721Token targetToken
+    );
+    event ERC20TargetUpdated(
+        address erc20Address,
+        uint256 value,
+        ERC721Token sourceToken,
+        ERC721Token targetToken
+    );
+    event ERC20Unlinked(
+        address to,
+        address erc20Address,
+        uint256 value,
+        ERC721Token targetToken
+    );
+
     function linkERC20(
         address erc20Address,
         uint256 value,
@@ -30,6 +49,8 @@ abstract contract ComposableWithERC20 is Composable {
 
         uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
         _updateBalanceOfERC20(targetToken, erc20Address, oldBalance + value);
+
+        emit ERC20Linked(msg.sender, erc20Address, value, targetToken);
     }
 
     function updateERC20Target(
@@ -56,7 +77,7 @@ abstract contract ComposableWithERC20 is Composable {
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
         );
-        
+
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
@@ -79,6 +100,8 @@ abstract contract ComposableWithERC20 is Composable {
             erc20Address,
             oldTargetBalance + value
         );
+
+        emit ERC20TargetUpdated(erc20Address, value, sourceToken, targetToken);
     }
 
     function unlinkERC20(
@@ -112,6 +135,8 @@ abstract contract ComposableWithERC20 is Composable {
         _updateBalanceOfERC20(targetToken, erc20Address, oldBalance - value);
 
         IERC20(erc20Address).safeTransfer(to, value);
+
+        emit ERC20Unlinked(to, erc20Address, value, targetToken);
     }
 
     function _updateBalanceOfERC20(

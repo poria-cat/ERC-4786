@@ -32,8 +32,8 @@ contract Composable is ERC721 {
         ERC721Token sourceToken,
         ERC721Token targetToken
     );
-    event TokenUnlinked(address to, ERC721Token sourceToken);
     event TargetUpdated(ERC721Token sourceToken, ERC721Token targetToken);
+    event TokenUnlinked(address to, ERC721Token sourceToken);
 
     constructor(string memory _tokenName, string memory _tokenSymbol)
         ERC721(_tokenName, _tokenSymbol)
