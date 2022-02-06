@@ -203,7 +203,7 @@ contract Composable is ERC721 {
         );
         require(
             _checkItemsExists(targetToken),
-            "target/parent token token not in contract"
+            "target/parent token not in contract"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
