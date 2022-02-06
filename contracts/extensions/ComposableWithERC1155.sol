@@ -2,11 +2,12 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 import "../Composable.sol";
 import "./IComposableWithERC1155.sol";
 
-abstract contract ComposableWithERC1155 is Composable, IComposableWithERC1155 {
+abstract contract ComposableWithERC1155 is ERC1155Holder, Composable, IComposableWithERC1155 {
    
     // token => erc1155 => balance
     // mapping(address => mapping(uint256 => mapping (address => mapping(uint256 => uint256))) _balances;
@@ -16,11 +17,11 @@ abstract contract ComposableWithERC1155 is Composable, IComposableWithERC1155 {
         public
         view
         virtual
-        override(IERC165, Composable)
+        override(IERC165, ERC1155Receiver, Composable)
         returns (bool)
     {
         return
-            interfaceId == type(ComposableWithERC1155).interfaceId ||
+            interfaceId == type(IComposableWithERC1155).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

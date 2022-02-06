@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
@@ -11,7 +11,7 @@ import "./IComposable.sol";
 
 import "hardhat/console.sol";
 
-contract Composable is ERC721, IComposable {
+contract Composable is ERC721, ERC721Holder, IComposable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
@@ -298,13 +298,4 @@ contract Composable is ERC721, IComposable {
         internal
         virtual
     {}
-
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4) {
-        return this.onERC721Received.selector;
-    }
 }

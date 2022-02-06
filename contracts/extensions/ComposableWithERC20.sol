@@ -10,7 +10,7 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
     using SafeERC20 for IERC20;
 
     // (token => erc20 balance)
-    mapping(address => mapping(uint256 => mapping(address => uint256))) ;
+    mapping(address => mapping(uint256 => mapping(address => uint256))) _balancesOfERC20;
 
     function supportsInterface(bytes4 interfaceId)
         public

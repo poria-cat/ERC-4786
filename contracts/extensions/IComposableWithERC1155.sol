@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL3.0
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "../IComposable.sol";
 
-interface IComposableWithERC1155 is IComposable {
+interface IComposableWithERC1155 is IERC1155Receiver, IComposable {
     struct ERC1155Token {
         address tokenAddress;
         uint256 tokenId;
