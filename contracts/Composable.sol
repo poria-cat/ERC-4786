@@ -164,7 +164,7 @@ contract Composable is ERC721 {
     ) public {
         require(
             targetToken.tokenAddress != address(0),
-            "target/parent token address should not be address(0)"
+            "target/parent token address should not be zero address"
         );
 
         _beforeLink(msg.sender, sourceToken, targetToken);
@@ -192,7 +192,7 @@ contract Composable is ERC721 {
     ) public {
         require(
             targetToken.tokenAddress != address(0),
-            "target/parent token address should not be address(0)"
+            "target/parent token address should not be zero address"
         );
 
         _beforeUpdateTarget(sourceToken, targetToken);
@@ -230,7 +230,10 @@ contract Composable is ERC721 {
     }
 
     function unlink(address to, ERC721Token memory sourceToken) public {
-        // require(sourceToken.tokenAddress != address(this), "not child token");
+        require(to != address(0), "can't unlink to zero address");
+
+        _beforeUnlink(to, sourceToken);
+        
         require(
             _checkItemsExists(sourceToken),
             "source/child token not in contract"
@@ -279,6 +282,11 @@ contract Composable is ERC721 {
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken
     ) internal virtual {}
+
+    function _beforeUnlink(address to, ERC721Token memory sourceToken)
+        internal
+        virtual
+    {}
 
     function onERC721Received(
         address operator,
