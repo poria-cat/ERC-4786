@@ -134,7 +134,7 @@ describe("Test Composable", function () {
             );
         })
 
-        it("can't link not exists in contract's nft", async function () {
+        it("can't unlink not exists in contract's nft", async function () {
             await composable.safeMint(accounts[0].address);
 
             await testNFT.safeMint(accounts[0].address);
@@ -145,6 +145,20 @@ describe("Test Composable", function () {
 
             await expect(composable.unlink(accounts[0].address, [testNFT.address, testTokenId0])).to.be.revertedWith(
                 "source/child token not in contract"
+            );
+        })
+
+        it("can't unlink to zero address", async () => {
+            await composable.safeMint(accounts[0].address);
+
+            await testNFT.safeMint(accounts[0].address);
+            await testNFT.setApprovalForAll(
+                composable.address,
+                true
+            );
+
+            await expect(composable.unlink(ethers.constants.AddressZero, [testNFT.address, testTokenId0])).to.be.revertedWith(
+                "can't unlink to zero address"
             );
         })
     })
