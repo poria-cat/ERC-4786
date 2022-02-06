@@ -53,7 +53,7 @@ abstract contract ComposableWithERC1155 is Composable {
         uint256 oldBalance = balanceOfERC1155(targetToken, erc1155Token);
         _setBalanceOfERC1155(targetToken, erc1155Token, oldBalance + amount);
 
-        ERC1155Linked(msg.sender, erc1155Token, amount, targetToken);
+        emit ERC1155Linked(msg.sender, erc1155Token, amount, targetToken);
     }
 
     function updateERC1155Target(
@@ -96,7 +96,7 @@ abstract contract ComposableWithERC1155 is Composable {
             oldTargetBalance + amount
         );
 
-        ERC1155TargetUpdated(erc1155Token, amount, sourceToken, targetToken);
+        emit ERC1155TargetUpdated(erc1155Token, amount, sourceToken, targetToken);
     }
 
     function unlinkERC1155(
@@ -131,7 +131,7 @@ abstract contract ComposableWithERC1155 is Composable {
             ""
         );
 
-        ERC1155Unlinked(to, erc1155Token, amount, targetToken);
+        emit ERC1155Unlinked(to, erc1155Token, amount, targetToken);
     }
 
     function _setBalanceOfERC1155(
