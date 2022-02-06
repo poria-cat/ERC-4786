@@ -99,6 +99,14 @@ abstract contract ComposableWithERC1155 is Composable {
         require(oldBalance >= amount, "transfer amount exceeds balance");
 
         _setBalanceOfERC1155(targetToken, erc1155Token, oldBalance - amount);
+
+        IERC1155(erc1155Token.tokenAddress).safeTransferFrom(
+            address(this),
+            to,
+            erc1155Token.tokenId,
+            amount,
+            ""
+        );
     }
 
     function _setBalanceOfERC1155(
@@ -114,7 +122,7 @@ abstract contract ComposableWithERC1155 is Composable {
     function balanceOfERC1155(
         ERC721Token memory targetToken,
         ERC1155Token memory erc1155Token
-    ) public returns (uint256 balance) {
+    ) public view returns (uint256 balance) {
         balance = _balances[targetToken.tokenAddress][targetToken.tokenId][
             erc1155Token.tokenAddress
         ][erc1155Token.tokenId];

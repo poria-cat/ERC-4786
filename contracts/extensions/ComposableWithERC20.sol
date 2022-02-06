@@ -38,7 +38,7 @@ abstract contract ComposableWithERC20 is Composable {
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
         );
-        
+
         _beforeLinkERC20(msg.sender, erc20Address, amount, targetToken);
 
         require(
@@ -46,7 +46,11 @@ abstract contract ComposableWithERC20 is Composable {
             "target/parent token token not in contract"
         );
 
-        IERC20(erc20Address).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20(erc20Address).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
 
         uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
         _updateBalanceOfERC20(targetToken, erc20Address, oldBalance + amount);
@@ -65,7 +69,12 @@ abstract contract ComposableWithERC20 is Composable {
             "target/parent token address should not be zero address"
         );
 
-        _beforeUpdateERC20Target(erc20Address, amount, sourceToken, targetToken);
+        _beforeUpdateERC20Target(
+            erc20Address,
+            amount,
+            sourceToken,
+            targetToken
+        );
 
         require(
             _checkItemsExists(targetToken),
@@ -174,7 +183,7 @@ abstract contract ComposableWithERC20 is Composable {
     function balanceOfERC20(
         ERC721Token memory targetToken,
         address erc20Address
-    ) public returns (uint256 balance) {
+    ) public view returns (uint256 balance) {
         balance = _balances[targetToken.tokenAddress][targetToken.tokenId][
             erc20Address
         ];
