@@ -19,6 +19,7 @@ abstract contract ComposableWithERC20 is Composable {
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
         );
+        _beforeLinkERC20(msg.sender, erc20Address, value, targetToken);
 
         require(
             _checkItemsExists(targetToken),
@@ -41,6 +42,7 @@ abstract contract ComposableWithERC20 is Composable {
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
         );
+        _beforeUpdateERC20Target(erc20Address, value, sourceToken, targetToken);
 
         require(
             _checkItemsExists(targetToken),
@@ -54,6 +56,7 @@ abstract contract ComposableWithERC20 is Composable {
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
         );
+        
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
@@ -85,6 +88,8 @@ abstract contract ComposableWithERC20 is Composable {
         ERC721Token memory targetToken
     ) public {
         require(to != address(0), "can't unlink to zero address");
+        _beforeUnlinkERC20(to, erc20Address, value, targetToken);
+
         require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
@@ -118,6 +123,27 @@ abstract contract ComposableWithERC20 is Composable {
             erc20Address
         ] = value;
     }
+
+    function _beforeLinkERC20(
+        address from,
+        address erc20Address,
+        uint256 value,
+        ERC721Token memory targetToken
+    ) internal virtual {}
+
+    function _beforeUpdateERC20Target(
+        address erc20Address,
+        uint256 value,
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
+    ) internal virtual {}
+
+    function _beforeUnlinkERC20(
+        address to,
+        address erc20Address,
+        uint256 value,
+        ERC721Token memory targetToken
+    ) internal virtual {}
 
     function balanceOfERC20(
         ERC721Token memory targetToken,
