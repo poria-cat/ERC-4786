@@ -179,8 +179,8 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         ERC721Token memory targetToken,
         address erc20Address
     ) public view returns (uint256 balance) {
-        balance = _balancesOfERC20[targetToken.tokenAddress][targetToken.tokenId][
-            erc20Address
-        ];
+        balance = _balancesOfERC20[targetToken.tokenAddress][
+            targetToken.tokenId
+        ][erc20Address];
     }
 }

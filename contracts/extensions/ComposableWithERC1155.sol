@@ -7,8 +7,11 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "../Composable.sol";
 import "./IComposableWithERC1155.sol";
 
-abstract contract ComposableWithERC1155 is ERC1155Holder, Composable, IComposableWithERC1155 {
-   
+abstract contract ComposableWithERC1155 is
+    ERC1155Holder,
+    Composable,
+    IComposableWithERC1155
+{
     // token => erc1155 => balance
     // mapping(address => mapping(uint256 => mapping (address => mapping(uint256 => uint256))) _balances;
     mapping(address => mapping(uint256 => mapping(address => mapping(uint256 => uint256)))) _balancesOfERC1155;
@@ -89,7 +92,12 @@ abstract contract ComposableWithERC1155 is ERC1155Holder, Composable, IComposabl
             oldTargetBalance + amount
         );
 
-        emit ERC1155TargetUpdated(erc1155Token, amount, sourceToken, targetToken);
+        emit ERC1155TargetUpdated(
+            erc1155Token,
+            amount,
+            sourceToken,
+            targetToken
+        );
     }
 
     function unlinkERC1155(
@@ -141,8 +149,8 @@ abstract contract ComposableWithERC1155 is ERC1155Holder, Composable, IComposabl
         ERC721Token memory targetToken,
         ERC1155Token memory erc1155Token
     ) public view returns (uint256 balance) {
-        balance = _balancesOfERC1155[targetToken.tokenAddress][targetToken.tokenId][
-            erc1155Token.tokenAddress
-        ][erc1155Token.tokenId];
+        balance = _balancesOfERC1155[targetToken.tokenAddress][
+            targetToken.tokenId
+        ][erc1155Token.tokenAddress][erc1155Token.tokenId];
     }
 }

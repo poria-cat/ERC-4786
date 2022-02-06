@@ -6,10 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "hardhat/console.sol";
 
 import "./IComposable.sol";
-
-import "hardhat/console.sol";
 
 contract Composable is ERC721, ERC721Holder, IComposable {
     using Counters for Counters.Counter;
