@@ -72,6 +72,10 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         );
 
         require(
+            _checkItemsExists(sourceToken),
+            "source/child token token not in contract"
+        );
+        require(
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
@@ -109,6 +113,8 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         emit ERC20TargetUpdated(erc20Address, amount, sourceToken, targetToken);
     }
 
+    // erc20 as source token, erc721 as target token,
+    // so it is unlink source token from target token to `to`
     function unlinkERC20(
         address to,
         address erc20Address,
@@ -128,6 +134,10 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
             targetToken
         );
 
+        require(
+            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
+            "wrong token"
+        );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of target token"

@@ -195,9 +195,14 @@ contract Composable is ERC721, ERC721Holder, IComposable {
         _beforeUpdateTarget(sourceToken, targetToken);
 
         require(
+            _checkItemsExists(sourceToken),
+            "source/child token token not in contract"
+        );
+        require(
             _checkItemsExists(targetToken),
             "target/parent token not in contract"
         );
+        
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
@@ -242,6 +247,11 @@ contract Composable is ERC721, ERC721Holder, IComposable {
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
+        );
+
+        require(
+            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
+            "wrong token"
         );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
