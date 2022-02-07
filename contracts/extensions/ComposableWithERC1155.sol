@@ -159,7 +159,7 @@ abstract contract ComposableWithERC1155 is
     function balanceOfERC1155(
         ERC721Token memory targetToken,
         ERC1155Token memory erc1155Token
-    ) public view returns (uint256 balance) {
+    ) public view override returns (uint256 balance) {
         balance = _balancesOfERC1155[targetToken.tokenAddress][
             targetToken.tokenId
         ][erc1155Token.tokenAddress][erc1155Token.tokenId];
