@@ -136,4 +136,80 @@ describe("Test ERC1155 Composable", function () {
       );
     });
   });
+
+  describe("Unlink", () => {
+    it("unlink", async () => {
+      await composable.safeMint(accounts[0].address);
+      await composable.safeMint(accounts[0].address);
+
+      await mockERC1155.mint(accounts[0].address, 0, 10);
+
+      await mockERC1155.setApprovalForAll(composable.address, true);
+
+      const erc1155Token = [mockERC1155.address, 0];
+      const targetToken = [composable.address, 0];
+
+      await composable.linkERC1155(erc1155Token, 5, targetToken);
+
+      expect(
+        await composable.balanceOfERC1155(targetToken, erc1155Token)
+      ).to.be.eq(BigNumber.from(5));
+
+      await composable.unlinkERC1155(
+        accounts[0].address,
+        erc1155Token,
+        5,
+        targetToken
+      );
+
+      expect(
+        await composable.balanceOfERC1155(targetToken, erc1155Token)
+      ).to.be.eq(BigNumber.from(0));
+    });
+
+    it("can't link if not own target", async () => {
+      await composable.safeMint(accounts[0].address);
+      await composable.safeMint(accounts[0].address);
+
+      await mockERC1155.mint(accounts[0].address, 0, 10);
+
+      await mockERC1155.setApprovalForAll(composable.address, true);
+
+      const erc1155Token = [mockERC1155.address, 0];
+      const targetToken = [composable.address, 0];
+
+      await composable.linkERC1155(erc1155Token, 5, targetToken);
+
+      await expectRevert(
+        composable
+          .connect(accounts[1])
+          .unlinkERC1155(accounts[0].address, erc1155Token, 5, targetToken),
+        "caller not owner of target token"
+      );
+    });
+
+    it("can't unlink exceeds balance", async () => {
+      await composable.safeMint(accounts[0].address);
+      await composable.safeMint(accounts[0].address);
+
+      await mockERC1155.mint(accounts[0].address, 0, 10);
+
+      await mockERC1155.setApprovalForAll(composable.address, true);
+
+      const erc1155Token = [mockERC1155.address, 0];
+      const targetToken = [composable.address, 0];
+
+      await composable.linkERC1155(erc1155Token, 5, targetToken);
+
+      await expectRevert(
+        composable.unlinkERC1155(
+          accounts[0].address,
+          erc1155Token,
+          20,
+          targetToken
+        ),
+        "transfer amount exceeds balance"
+      );
+    });
+  });
 });
