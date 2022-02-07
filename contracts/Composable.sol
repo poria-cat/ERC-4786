@@ -83,6 +83,10 @@ contract Composable is ERC721, ERC721Holder, IComposable {
         view
         returns (bool)
     {
+        if (token.tokenAddress == address(0)) {
+            return false;
+        }
+
         if (token.tokenAddress == address(this)) {
             // just check id existed
             return _exists(token.tokenId);
@@ -95,26 +99,12 @@ contract Composable is ERC721, ERC721Holder, IComposable {
             // if token have no source/child token, it not in this contract(and it also not a root token)
             return _source[token.tokenAddress][token.tokenId].length() > 0;
         } else {
-            // target parent is not address(0), so it should have child/source token
-            return _source[targetTokenAddress][targetTokenId].length() > 0;
-        }
-    }
-
-    function _checkRootExists(ERC721Token memory rootToken)
-        internal
-        view
-        returns (bool)
-    {
-        if (rootToken.tokenAddress == address(0)) {
-            return false;
-        }
-
-        if (rootToken.tokenAddress == address(this)) {
-            return _exists(rootToken.tokenId);
-        } else {
-            // root token is not source this contract, so check it have source/child or not
+            // target parent is not address(0), so it should have this token
+            // return _source[targetTokenAddress][targetTokenId].length() > 0;
             return
-                _source[rootToken.tokenAddress][rootToken.tokenId].length() > 0;
+                _source[targetTokenAddress][targetTokenId].contains(
+                    keccak256(abi.encode(token.tokenAddress, token.tokenId))
+                );
         }
     }
 
@@ -205,16 +195,17 @@ contract Composable is ERC721, ERC721Holder, IComposable {
         _beforeUpdateTarget(sourceToken, targetToken);
 
         require(
-            _checkItemsExists(sourceToken),
-            "source/child token not in contract"
-        );
-        require(
             _checkItemsExists(targetToken),
             "target/parent token not in contract"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
+        );
+
+        require(
+            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
+            "wrong token"
         );
         // maybe root token source other contract NFT, so use down code
         require(

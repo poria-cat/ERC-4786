@@ -75,15 +75,15 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
             _checkItemsExists(targetToken),
             "target/parent token token not in contract"
         );
-        require(
-            _checkItemsExists(sourceToken),
-            "source/child token token not in contract"
-        );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
         );
 
+        require(
+            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
+            "wrong token"
+        );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
