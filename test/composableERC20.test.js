@@ -200,5 +200,73 @@ describe("Test ERC20 Composable", function () {
     });
   });
 
-  describe("Test unlink", async () => {});
+  describe("Test unlink", async () => {
+    it("unlink", async () => {
+      await composable.safeMint(accounts[0].address);
+      await mockERC20.mint(accounts[0].address, mintedERC20);
+
+      await mockERC20.approve(composable.address, mintedERC20);
+
+      const targetToken = [composable.address, linkedTokenId0];
+
+      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+      await composable.unlinkERC20(
+        accounts[0].address,
+        mockERC20.address,
+        mintedERC20,
+        targetToken
+      );
+
+      expect(
+        await composable.balanceOfERC20(targetToken, mockERC20.address)
+      ).to.be.eq(BigNumber.from(0));
+      expect(await mockERC20.balanceOf(accounts[0].address)).to.be.eq(
+        mintedERC20
+      );
+    });
+
+    it("can't unlink if not own target token", async () => {
+      await composable.safeMint(accounts[0].address);
+      await mockERC20.mint(accounts[0].address, mintedERC20);
+
+      await mockERC20.approve(composable.address, mintedERC20);
+
+      const targetToken = [composable.address, linkedTokenId0];
+
+      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+
+      await expectRevert(
+        composable
+          .connect(accounts[1])
+          .unlinkERC20(
+            accounts[0].address,
+            mockERC20.address,
+            mintedERC20,
+            targetToken
+          ),
+        "caller not owner of target token"
+      );
+    });
+
+    it("can't unlink exceeds balance", async () => {
+      await composable.safeMint(accounts[0].address);
+      await mockERC20.mint(accounts[0].address, mintedERC20);
+
+      await mockERC20.approve(composable.address, mintedERC20);
+
+      const targetToken = [composable.address, linkedTokenId0];
+
+      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+
+      await expectRevert(
+        composable.unlinkERC20(
+          accounts[0].address,
+          mockERC20.address,
+          BigNumber.from(`${110 * 1e18}`),
+          targetToken
+        ),
+        "transfer amount exceeds balance"
+      );
+    });
+  });
 });
