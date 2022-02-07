@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL3.0
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-interface IComposable is IERC721, IERC721Receiver {
+interface IComposable is IERC165, IERC721Receiver {
     struct ERC721Token {
         address tokenAddress;
         uint256 tokenId;

@@ -6,7 +6,5 @@ import "../Composable.sol";
 import "../extensions/ComposableWithERC20.sol";
 
 contract ComposeableERC20Mock is ComposableWithERC20 {
-    constructor(string memory _tokenName, string memory _tokenSymbol)
-        Composable(_tokenName, _tokenSymbol)
-    {}
+    constructor() {}
 }

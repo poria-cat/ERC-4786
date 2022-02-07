@@ -2,15 +2,17 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "hardhat/console.sol";
 
 import "./IComposable.sol";
 
-contract Composable is ERC721, ERC721Holder, IComposable {
+contract Composable is ERC165, ERC721Holder, IComposable {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
@@ -24,20 +26,30 @@ contract Composable is ERC721, ERC721Holder, IComposable {
     // source/child(one to many): (target/parent token address + id => Set(keccak256(abi.encode(target/parent tokenaddress , target/parent id))))
     mapping(address => mapping(uint256 => EnumerableSet.Bytes32Set)) _source;
 
-    constructor(string memory _tokenName, string memory _tokenSymbol)
-        ERC721(_tokenName, _tokenSymbol)
-    {}
+    constructor() {}
 
     function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual
-        override(IERC165, ERC721)
+        override(IERC165, ERC165)
         returns (bool)
     {
         return
             interfaceId == type(IComposable).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    function _isERC721AndExists(ERC721Token memory token)
+        internal
+        view
+        returns (bool)
+    {
+        return
+            IERC165(token.tokenAddress).supportsInterface(
+                type(IERC721).interfaceId
+            ) &&
+            IERC721(token.tokenAddress).ownerOf(token.tokenId) != address(0);
     }
 
     function _addSource(
@@ -87,10 +99,10 @@ contract Composable is ERC721, ERC721Holder, IComposable {
             return false;
         }
 
-        if (token.tokenAddress == address(this)) {
-            // just check id existed
-            return _exists(token.tokenId);
-        }
+        // if (token.tokenAddress == address(this)) {
+        //     // just check id existed
+        //     return _exists(token.tokenId);
+        // }
 
         (address targetTokenAddress, uint256 targetTokenId) = getTarget(token);
 
@@ -165,10 +177,15 @@ contract Composable is ERC721, ERC721Holder, IComposable {
         );
 
         _beforeLink(msg.sender, sourceToken, targetToken);
-        // To prevent malicious use, it is prohibited to associate NFTs that are not in the contract
+
+        // require(
+        //     IERC721(targetToken.tokenAddress).ownerOf(targetToken.tokenId) !=
+        //         address(0),
+        //     "target/parent token not in exist"
+        // );
         require(
-            _checkItemsExists(targetToken),
-            "target/parent token not in contract"
+            _isERC721AndExists(targetToken),
+            "target/parent token not in exist"
         );
 
         ERC721(sourceToken.tokenAddress).transferFrom(
@@ -198,11 +215,15 @@ contract Composable is ERC721, ERC721Holder, IComposable {
             _checkItemsExists(sourceToken),
             "source/child token token not in contract"
         );
+
         require(
-            _checkItemsExists(targetToken),
-            "target/parent token not in contract"
+            _isERC721AndExists(targetToken),
+            "target/parent token not in exist"
         );
-        
+        // require(
+        //     _checkItemsExists(targetToken),
+        //     "target/parent token not in contract"
+        // );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
@@ -277,11 +298,11 @@ contract Composable is ERC721, ERC721Holder, IComposable {
         emit Unlinked(to, sourceToken);
     }
 
-    function safeMint(address to) external {
-        uint256 tokenId = _lastTokenId.current();
-        _lastTokenId.increment();
-        _safeMint(to, tokenId);
-    }
+    // function safeMint(address to) external {
+    //     uint256 tokenId = _lastTokenId.current();
+    //     _lastTokenId.increment();
+    //     _safeMint(to, tokenId);
+    // }
 
     function _beforeLink(
         address from,

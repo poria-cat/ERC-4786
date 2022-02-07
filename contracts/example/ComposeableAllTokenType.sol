@@ -11,10 +11,10 @@ contract ComposeableAllTokenType is
     ComposableWithERC20,
     ComposableWithERC1155
 {
-    constructor(string memory _tokenName, string memory _tokenSymbol)
-        Composable(_tokenName, _tokenSymbol)
-    {}
-
+    // constructor(string memory _tokenName, string memory _tokenSymbol)
+    //     Composable(_tokenName, _tokenSymbol)
+    // {}
+    constructor() {}
     function supportsInterface(bytes4 interfaceId)
         public
         view

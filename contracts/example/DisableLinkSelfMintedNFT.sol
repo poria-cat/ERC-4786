@@ -4,9 +4,10 @@ pragma solidity ^0.8.0;
 import "../Composable.sol";
 
 contract DisableLinkSelfMintedNFT is Composable {
-    constructor(string memory _tokenName, string memory _tokenSymbol)
-        Composable(_tokenName, _tokenSymbol)
-    {}
+    // constructor(string memory _tokenName, string memory _tokenSymbol)
+    //     Composable(_tokenName, _tokenSymbol)
+    // {}
+    constructor() {}
 
     modifier canNotLink(address fromTokenAddress) {
         require(
