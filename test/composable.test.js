@@ -257,5 +257,37 @@ describe("Test Composable", function () {
         "can't unlink to zero address"
       );
     });
+
+    it("complex", async () => {
+      await composable.safeMint(accounts[0].address);
+      await composable.safeMint(accounts[0].address);
+
+      await testNFT.safeMint(accounts[0].address);
+      await testNFT.safeMint(accounts[0].address);
+      await testNFT.safeMint(accounts[0].address);
+
+      await testNFT.setApprovalForAll(composable.address, true);
+
+      // 1. link to contract
+      await composable.link(
+        [testNFT.address, testTokenId0],
+        [composable.address, linkedTokenId0]
+      );
+      // 2. link to last
+      await composable.link(
+        [testNFT.address, testTokenId1],
+        [testNFT.address, testTokenId0]
+      );
+      // 3. unlink
+      await composable.unlink(accounts[0].address, [
+        testNFT.address,
+        testTokenId0,
+      ]);
+      // 4. link
+      await composable.link(
+        [testNFT.address, 2],
+        [testNFT.address, testTokenId0]
+      );
+    });
   });
 });
