@@ -8,7 +8,7 @@ contract MockERC1155 is ERC1155 {
 
     function setURI(string memory newuri) public {
         _setURI(newuri);
-    }
+    } 
 
     function mint(
         address account,
