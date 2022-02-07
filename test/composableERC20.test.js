@@ -7,6 +7,7 @@ const { constants, expectRevert } = require("@openzeppelin/test-helpers");
 describe("Test ERC20 Composable", function () {
   let composable;
   let mockERC20;
+  let testNFT;
   let accounts;
 
   const linkedTokenId0 = 0;
@@ -17,6 +18,7 @@ describe("Test ERC20 Composable", function () {
   before(async function () {
     this.Composable = await ethers.getContractFactory("ComposeableERC20Mock");
     this.MockERC20 = await ethers.getContractFactory("MockERC20");
+    this.TestNFT = await ethers.getContractFactory("TestNFT");
 
     accounts = await ethers.getSigners();
   });
@@ -27,9 +29,12 @@ describe("Test ERC20 Composable", function () {
 
     mockERC20 = await this.MockERC20.deploy();
     await mockERC20.deployed();
+
+    testNFT = await this.TestNFT.deploy();
+    await testNFT.deployed();
   });
 
-  describe("Test link erc20", () => {
+  describe("Test link", () => {
     it("link", async () => {
       await composable.safeMint(accounts[0].address);
       await mockERC20.mint(accounts[0].address, mintedERC20);
@@ -72,7 +77,7 @@ describe("Test ERC20 Composable", function () {
     });
   });
 
-  describe("Test updateERC20Target", () => {
+  describe("Test updateTarget", () => {
     it("updateERC20Target", async () => {
       await composable.safeMint(accounts[0].address);
       await composable.safeMint(accounts[0].address);
@@ -147,5 +152,53 @@ describe("Test ERC20 Composable", function () {
         "caller not owner of source token"
       );
     });
+
+    it("target token address can't be zero address", async () => {
+      await composable.safeMint(accounts[0].address);
+      await composable.safeMint(accounts[0].address);
+
+      await mockERC20.mint(accounts[0].address, mintedERC20);
+
+      await mockERC20.approve(composable.address, mintedERC20);
+
+      const targetToken1 = [composable.address, linkedTokenId0];
+      const targetToken2 = [constants.ZERO_ADDRESS, linkedTokenId1];
+
+      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
+      await expectRevert(
+        composable.updateERC20Target(
+          mockERC20.address,
+          mintedERC20,
+          targetToken1,
+          targetToken2
+        ),
+        "target/parent token address should not be zero address"
+      );
+    });
+
+    it("can't updateTarget to not exist in contract", async () => {
+      await composable.safeMint(accounts[0].address);
+      await testNFT.safeMint(accounts[0].address);
+
+      await mockERC20.mint(accounts[0].address, mintedERC20);
+
+      await mockERC20.approve(composable.address, mintedERC20);
+
+      const targetToken1 = [composable.address, linkedTokenId0];
+      const targetToken2 = [testNFT.address, linkedTokenId0];
+
+      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
+      await expectRevert(
+        composable.updateERC20Target(
+          mockERC20.address,
+          mintedERC20,
+          targetToken1,
+          targetToken2
+        ),
+        "target/parent token token not in contract"
+      );
+    });
   });
+
+  describe("Test unlink", async () => {});
 });
