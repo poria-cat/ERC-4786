@@ -133,6 +133,65 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         return true;
     }
 
+    // what is a root token?
+    // 1. no target node
+    // 2. have source node
+    function _isRootToken(ERC721Token memory token)
+        internal
+        view
+        returns (bool)
+    {
+        if (
+            !_haveTarget(token) &&
+            _source[token.tokenAddress][token.tokenId].length() > 0
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // check whether ancestorToken is descendantToken's ancestor
+    function _isAncestor(
+        ERC721Token memory descendantToken,
+        ERC721Token memory ancestorToken
+    ) public view returns (bool) {
+        if (!_checkItemsExists(descendantToken)) {
+            return false;
+        }
+
+        if (_isRootToken(descendantToken)) {
+            return false;
+        }
+
+        (address _targetTokenAddress, uint256 _targetTokenId) = getTarget(
+            descendantToken
+        );
+
+        bool isAncestor = false;
+
+        while (!isAncestor) {
+            if (
+                _targetTokenAddress == ancestorToken.tokenAddress &&
+                _targetTokenId == ancestorToken.tokenId
+            ) {
+                isAncestor = true;
+            }
+
+            if (
+                _isRootToken(ERC721Token(_targetTokenAddress, _targetTokenId))
+            ) {
+                break;
+            }
+
+            (_targetTokenAddress, _targetTokenId) = getTarget(
+                ERC721Token(_targetTokenAddress, _targetTokenId)
+            );
+        }
+
+        return isAncestor;
+    }
+
     function findRootToken(ERC721Token memory token)
         public
         view
@@ -175,6 +234,10 @@ contract Composable is ERC165, ERC721Holder, IComposable {
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
         );
+        require(
+            sourceToken.tokenAddress != address(0),
+            "source/child token address should not be zero address"
+        );
 
         _beforeLink(msg.sender, sourceToken, targetToken);
 
@@ -186,6 +249,11 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         require(
             _isERC721AndExists(targetToken),
             "target/parent token not in exist"
+        );
+
+        require(
+            !_isAncestor(targetToken, sourceToken),
+            "source token is ancestor token"
         );
 
         ERC721(sourceToken.tokenAddress).transferFrom(
@@ -207,6 +275,10 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         require(
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
+        );
+        require(
+            sourceToken.tokenAddress != address(0),
+            "source/child token address should not be zero address"
         );
 
         _beforeUpdateTarget(sourceToken, targetToken);
@@ -237,6 +309,11 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller is not owner of source/child token"
+        );
+
+        require(
+            !_isAncestor(targetToken, sourceToken),
+            "source token is ancestor token"
         );
 
         (address _targetTokenAddress, uint256 _targetTokenId) = getTarget(
