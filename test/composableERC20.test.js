@@ -7,7 +7,9 @@ const { constants, expectRevert } = require("@openzeppelin/test-helpers");
 describe("Test ERC20 Composable", function () {
   let composable;
   let mockERC20;
-  let testNFT;
+  let targetNFT;
+  let mockNFT;
+
   let accounts;
 
   const linkedTokenId0 = 0;
@@ -18,30 +20,53 @@ describe("Test ERC20 Composable", function () {
   before(async function () {
     this.Composable = await ethers.getContractFactory("ComposeableERC20Mock");
     this.MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.TestNFT = await ethers.getContractFactory("TestNFT");
+    this.TargetNFT = await ethers.getContractFactory("MockNFT");
+    this.MockNFT = await ethers.getContractFactory("MockNFT");
 
     accounts = await ethers.getSigners();
   });
 
   beforeEach(async function () {
-    composable = await this.Composable.deploy("JustNFT", "JNFT");
+    composable = await this.Composable.deploy();
     await composable.deployed();
 
     mockERC20 = await this.MockERC20.deploy();
     await mockERC20.deployed();
 
-    testNFT = await this.TestNFT.deploy();
-    await testNFT.deployed();
+    targetNFT = await this.TargetNFT.deploy();
+    await targetNFT.deployed();
+
+    mockNFT = await this.MockNFT.deploy();
+    await mockNFT.deployed();
   });
 
   describe("Test link", () => {
     it("link", async () => {
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
       await mockERC20.mint(accounts[0].address, mintedERC20);
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken = [composable.address, linkedTokenId0];
+      const targetToken = [targetNFT.address, linkedTokenId0];
+
+      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+
+      expect(
+        await composable.balanceOfERC20(targetToken, mockERC20.address)
+      ).to.be.eq(mintedERC20);
+    });
+
+    it("link to source token", async () => {
+      await targetNFT.safeMint(accounts[0].address);
+      await mockNFT.safeMint(accounts[0].address);
+      await mockERC20.mint(accounts[0].address, mintedERC20);
+
+      await mockERC20.approve(composable.address, mintedERC20);
+      await mockNFT.setApprovalForAll(composable.address, true);
+
+      await composable.link([mockNFT.address, 0], [targetNFT.address, 0]);
+
+      const targetToken = [targetNFT.address, linkedTokenId0];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
 
@@ -51,12 +76,12 @@ describe("Test ERC20 Composable", function () {
     });
 
     it("can't link with exceeds balance", async () => {
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
       await mockERC20.mint(accounts[0].address, BigNumber.from(`${10 * 1e18}`));
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken = [composable.address, linkedTokenId0];
+      const targetToken = [targetNFT.address, linkedTokenId0];
 
       await expectRevert(
         composable.linkERC20(mockERC20.address, mintedERC20, targetToken),
@@ -79,15 +104,15 @@ describe("Test ERC20 Composable", function () {
 
   describe("Test updateTarget", () => {
     it("updateERC20Target", async () => {
-      await composable.safeMint(accounts[0].address);
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
 
       await mockERC20.mint(accounts[0].address, mintedERC20);
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken1 = [composable.address, linkedTokenId0];
-      const targetToken2 = [composable.address, linkedTokenId1];
+      const targetToken1 = [targetNFT.address, linkedTokenId0];
+      const targetToken2 = [targetNFT.address, linkedTokenId1];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
       await composable.updateERC20Target(
@@ -105,16 +130,38 @@ describe("Test ERC20 Composable", function () {
       ).to.be.eq(mintedERC20);
     });
 
+    it("update target token with source token's erc20", async () => {
+      await targetNFT.safeMint(accounts[0].address);
+      await mockNFT.safeMint(accounts[0].address);
+      await mockERC20.mint(accounts[0].address, mintedERC20);
+
+      await mockERC20.approve(composable.address, mintedERC20);
+      await mockNFT.setApprovalForAll(composable.address, true);
+
+      const targetToken = [targetNFT.address, linkedTokenId0];
+      const sourceToken = [mockNFT.address, 0];
+
+      await composable.link(sourceToken, targetToken);
+      await composable.linkERC20(mockERC20.address, mintedERC20, sourceToken);
+
+      await composable.updateERC20Target(
+        mockERC20.address,
+        mintedERC20,
+        sourceToken,
+        targetToken
+      );
+    });
+
     it("can't updateTarget with exceeds balance ", async () => {
-      await composable.safeMint(accounts[0].address);
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
 
       await mockERC20.mint(accounts[0].address, mintedERC20);
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken1 = [composable.address, linkedTokenId0];
-      const targetToken2 = [composable.address, linkedTokenId1];
+      const targetToken1 = [targetNFT.address, linkedTokenId0];
+      const targetToken2 = [targetNFT.address, linkedTokenId1];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
       await expectRevert(
@@ -129,15 +176,15 @@ describe("Test ERC20 Composable", function () {
     });
 
     it("can't updateTarget with not own", async () => {
-      await composable.safeMint(accounts[0].address);
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
 
       await mockERC20.mint(accounts[0].address, mintedERC20);
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken1 = [composable.address, linkedTokenId0];
-      const targetToken2 = [composable.address, linkedTokenId1];
+      const targetToken1 = [targetNFT.address, linkedTokenId0];
+      const targetToken2 = [targetNFT.address, linkedTokenId1];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
       await expectRevert(
@@ -154,14 +201,13 @@ describe("Test ERC20 Composable", function () {
     });
 
     it("target token address can't be zero address", async () => {
-      await composable.safeMint(accounts[0].address);
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
 
       await mockERC20.mint(accounts[0].address, mintedERC20);
-
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken1 = [composable.address, linkedTokenId0];
+      const targetToken1 = [targetNFT.address, linkedTokenId0];
       const targetToken2 = [constants.ZERO_ADDRESS, linkedTokenId1];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
@@ -176,16 +222,16 @@ describe("Test ERC20 Composable", function () {
       );
     });
 
-    it("can't updateTarget to not exist in contract", async () => {
-      await composable.safeMint(accounts[0].address);
-      await testNFT.safeMint(accounts[0].address);
+    it("can't updateTarget to not a erc721 token", async () => {
+      await targetNFT.safeMint(accounts[0].address);
+      await mockNFT.safeMint(accounts[0].address);
 
       await mockERC20.mint(accounts[0].address, mintedERC20);
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken1 = [composable.address, linkedTokenId0];
-      const targetToken2 = [testNFT.address, linkedTokenId0];
+      const targetToken1 = [targetNFT.address, linkedTokenId0];
+      const targetToken2 = [composable.address, linkedTokenId0];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
       await expectRevert(
@@ -195,19 +241,19 @@ describe("Test ERC20 Composable", function () {
           targetToken1,
           targetToken2
         ),
-        "target/parent token token not in contract"
+        "target/parent token not ERC721 token or not exist"
       );
     });
   });
 
   describe("Test unlink", async () => {
     it("unlink", async () => {
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
       await mockERC20.mint(accounts[0].address, mintedERC20);
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken = [composable.address, linkedTokenId0];
+      const targetToken = [targetNFT.address, linkedTokenId0];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
       await composable.unlinkERC20(
@@ -226,12 +272,12 @@ describe("Test ERC20 Composable", function () {
     });
 
     it("can't unlink if not own target token", async () => {
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
       await mockERC20.mint(accounts[0].address, mintedERC20);
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken = [composable.address, linkedTokenId0];
+      const targetToken = [targetNFT.address, linkedTokenId0];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
 
@@ -249,12 +295,12 @@ describe("Test ERC20 Composable", function () {
     });
 
     it("can't unlink exceeds balance", async () => {
-      await composable.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[0].address);
       await mockERC20.mint(accounts[0].address, mintedERC20);
 
       await mockERC20.approve(composable.address, mintedERC20);
 
-      const targetToken = [composable.address, linkedTokenId0];
+      const targetToken = [targetNFT.address, linkedTokenId0];
 
       await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
 

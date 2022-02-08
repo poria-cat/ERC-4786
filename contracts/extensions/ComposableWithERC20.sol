@@ -37,9 +37,14 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         _beforeLinkERC20(msg.sender, erc20Address, amount, targetToken);
 
         require(
-            _checkItemsExists(targetToken),
-            "target/parent token token not in contract"
+            _isERC721AndExists(targetToken),
+            "target/parent token not ERC721 token or not exist"
         );
+
+        // require(
+        //     _checkItemsExists(targetToken),
+        //     "target/parent token token not in contract"
+        // );
 
         IERC20(erc20Address).safeTransferFrom(
             msg.sender,
@@ -63,6 +68,10 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
         );
+        require(
+            sourceToken.tokenAddress != address(0),
+            "source/child token address should not be zero address"
+        );
 
         _beforeUpdateERC20Target(
             erc20Address,
@@ -71,23 +80,16 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
             targetToken
         );
 
+        // because have check source token's ownership, so it is a erc721 token
         require(
-            _checkItemsExists(sourceToken),
-            "source/child token token not in contract"
-        );
-        require(
-            _checkItemsExists(targetToken),
-            "target/parent token token not in contract"
+            _isERC721AndExists(targetToken),
+            "target/parent token not ERC721 token or not exist"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
         );
 
-        require(
-            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
-            "wrong token"
-        );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
@@ -126,18 +128,14 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         _beforeUnlinkERC20(to, erc20Address, amount, targetToken);
 
         require(
-            _checkItemsExists(targetToken),
-            "target/parent token token not in contract"
+            _isERC721AndExists(targetToken),
+            "target/parent token not ERC721 token or not exist"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             targetToken
         );
 
-        require(
-            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
-            "wrong token"
-        );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of target token"
