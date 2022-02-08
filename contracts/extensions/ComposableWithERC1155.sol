@@ -34,8 +34,15 @@ abstract contract ComposableWithERC1155 is
         ERC721Token memory targetToken
     ) external override {
         require(
-            _checkItemsExists(targetToken),
-            "target/parent token token not in contract"
+            targetToken.tokenAddress != address(0),
+            "target/parent token address should not be zero address"
+        );
+
+        _beforeLinkERC1155(msg.sender, erc1155Token, amount, targetToken);
+
+        require(
+            _isERC721AndExists(targetToken),
+            "target/parent token not ERC721 token or not exist"
         );
 
         IERC1155(erc1155Token.tokenAddress).safeTransferFrom(
@@ -59,22 +66,30 @@ abstract contract ComposableWithERC1155 is
         ERC721Token memory targetToken
     ) external override {
         require(
-            _checkItemsExists(sourceToken),
-            "source/child token token not in contract"
+            sourceToken.tokenAddress != address(0),
+            "source/child token address should not be zero address"
         );
         require(
-            _checkItemsExists(targetToken),
-            "target/parent token token not in contract"
+            targetToken.tokenAddress != address(0),
+            "target/parent token address should not be zero address"
+        );
+
+        _beforeUpdateERC1155Target(
+            erc1155Token,
+            amount,
+            sourceToken,
+            targetToken
+        );
+
+        require(
+            _isERC721AndExists(targetToken),
+            "target/parent token not ERC721 token or not exist"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
         );
 
-        require(
-            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
-            "wrong token"
-        );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of source token"
@@ -111,19 +126,19 @@ abstract contract ComposableWithERC1155 is
         uint256 amount,
         ERC721Token memory targetToken
     ) external override {
+        require(to != address(0), "can't unlink to zero address");
+
+        _beforeUnlinkERC1155(to, erc1155Token, amount, targetToken);
+
         require(
-            _checkItemsExists(targetToken),
-            "target/parent token token not in contract"
+            _isERC721AndExists(targetToken),
+            "target/parent token not ERC721 token or not exist"
         );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             targetToken
         );
 
-        require(
-            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
-            "wrong token"
-        );
         require(
             ERC721(rootTokenAddress).ownerOf(rootTokenId) == msg.sender,
             "caller not owner of target token"
@@ -164,4 +179,25 @@ abstract contract ComposableWithERC1155 is
             targetToken.tokenId
         ][erc1155Token.tokenAddress][erc1155Token.tokenId];
     }
+
+    function _beforeLinkERC1155(
+        address from,
+        ERC1155Token memory erc1155Token,
+        uint256 amount,
+        ERC721Token memory targetToken
+    ) internal virtual {}
+
+    function _beforeUpdateERC1155Target(
+        ERC1155Token memory erc1155Token,
+        uint256 amount,
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
+    ) internal virtual {}
+
+    function _beforeUnlinkERC1155(
+        address to,
+        ERC1155Token memory erc1155Token,
+        uint256 amount,
+        ERC721Token memory targetToken
+    ) internal virtual {}
 }
