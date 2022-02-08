@@ -65,13 +65,14 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         ERC721Token memory targetToken
     ) external override {
         require(
-            targetToken.tokenAddress != address(0),
-            "target/parent token address should not be zero address"
-        );
-        require(
             sourceToken.tokenAddress != address(0),
             "source/child token address should not be zero address"
         );
+        require(
+            targetToken.tokenAddress != address(0),
+            "target/parent token address should not be zero address"
+        );
+        
 
         _beforeUpdateERC20Target(
             erc20Address,
