@@ -45,11 +45,14 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         view
         returns (bool)
     {
+        // Although can use try catch here, it's better to check is erc721 token in dapp.
         return
             IERC165(token.tokenAddress).supportsInterface(
                 type(IERC721).interfaceId
-            ) &&
-            IERC721(token.tokenAddress).ownerOf(token.tokenId) != address(0);
+            )
+                ? IERC721(token.tokenAddress).ownerOf(token.tokenId) !=
+                    address(0)
+                : false;
     }
 
     function _addSource(
@@ -241,14 +244,13 @@ contract Composable is ERC165, ERC721Holder, IComposable {
 
         _beforeLink(msg.sender, sourceToken, targetToken);
 
-        // require(
-        //     IERC721(targetToken.tokenAddress).ownerOf(targetToken.tokenId) !=
-        //         address(0),
-        //     "target/parent token not in exist"
-        // );
+        require(
+            _isERC721AndExists(sourceToken),
+            "source/child token not ERC721 token or not exist"
+        );
         require(
             _isERC721AndExists(targetToken),
-            "target/parent token not in exist"
+            "target/parent token not ERC721 token or not exist"
         );
 
         require(
@@ -290,12 +292,8 @@ contract Composable is ERC165, ERC721Holder, IComposable {
 
         require(
             _isERC721AndExists(targetToken),
-            "target/parent token not in exist"
+            "target/parent token not ERC721 token or not exist"
         );
-        // require(
-        //     _checkItemsExists(targetToken),
-        //     "target/parent token not in contract"
-        // );
 
         (address rootTokenAddress, uint256 rootTokenId) = findRootToken(
             sourceToken
