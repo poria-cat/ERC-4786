@@ -23,6 +23,11 @@ interface IComposableWithERC20 is IComposable {
         ERC721Token targetToken
     );
 
+    function balanceOfERC20(
+        ERC721Token memory targetToken,
+        address erc20Address
+    ) external view returns (uint256 balance);
+
     function linkERC20(
         address erc20Address,
         uint256 amount,

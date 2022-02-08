@@ -28,6 +28,15 @@ abstract contract ComposableWithERC1155 is
             super.supportsInterface(interfaceId);
     }
 
+    function balanceOfERC1155(
+        ERC721Token memory targetToken,
+        ERC1155Token memory erc1155Token
+    ) public view override returns (uint256 balance) {
+        balance = _balancesOfERC1155[targetToken.tokenAddress][
+            targetToken.tokenId
+        ][erc1155Token.tokenAddress][erc1155Token.tokenId];
+    }
+
     function linkERC1155(
         ERC1155Token memory erc1155Token,
         uint256 amount,
@@ -165,19 +174,10 @@ abstract contract ComposableWithERC1155 is
         ERC721Token memory targetToken,
         ERC1155Token memory erc1155Token,
         uint256 newBalance
-    ) private {
+    ) internal {
         _balancesOfERC1155[targetToken.tokenAddress][targetToken.tokenId][
             erc1155Token.tokenAddress
         ][erc1155Token.tokenId] = newBalance;
-    }
-
-    function balanceOfERC1155(
-        ERC721Token memory targetToken,
-        ERC1155Token memory erc1155Token
-    ) public view override returns (uint256 balance) {
-        balance = _balancesOfERC1155[targetToken.tokenAddress][
-            targetToken.tokenId
-        ][erc1155Token.tokenAddress][erc1155Token.tokenId];
     }
 
     function _beforeLinkERC1155(

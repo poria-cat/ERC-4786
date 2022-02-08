@@ -39,6 +39,11 @@ interface IComposable is IERC165, IERC721Receiver {
         view
         returns (address tokenAddress, uint256 tokenId);
 
+    function balanceOfERC721(
+        ERC721Token memory targetToken,
+        ERC721Token memory erc721Token
+    ) external view returns (uint256);
+
     function link(
         ERC721Token memory sourceToken,
         ERC721Token memory targetToken

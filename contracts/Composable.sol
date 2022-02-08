@@ -40,161 +40,6 @@ contract Composable is ERC165, ERC721Holder, IComposable {
             super.supportsInterface(interfaceId);
     }
 
-    function _isERC721AndExists(ERC721Token memory token)
-        internal
-        view
-        returns (bool)
-    {
-        // Although can use try catch here, it's better to check is erc721 token in dapp.
-        return
-            IERC165(token.tokenAddress).supportsInterface(
-                type(IERC721).interfaceId
-            )
-                ? IERC721(token.tokenAddress).ownerOf(token.tokenId) !=
-                    address(0)
-                : false;
-    }
-
-    function _addSource(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
-    ) private {
-        bytes32 _sourceToken = keccak256(
-            abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
-        );
-        _source[targetToken.tokenAddress][targetToken.tokenId].add(
-            _sourceToken
-        );
-    }
-
-    function _removeSource(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
-    ) internal {
-        bytes32 _sourceToken = keccak256(
-            abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
-        );
-        _source[targetToken.tokenAddress][targetToken.tokenId].remove(
-            _sourceToken
-        );
-    }
-
-    function _addTarget(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
-    ) internal {
-        _target[sourceToken.tokenAddress][sourceToken.tokenId] = ERC721Token(
-            targetToken.tokenAddress,
-            targetToken.tokenId
-        );
-    }
-
-    function _removeTarget(ERC721Token memory sourceToken) internal {
-        delete _target[sourceToken.tokenAddress][sourceToken.tokenId];
-    }
-
-    function _checkItemsExists(ERC721Token memory token)
-        internal
-        view
-        returns (bool)
-    {
-        if (token.tokenAddress == address(0)) {
-            return false;
-        }
-
-        // if (token.tokenAddress == address(this)) {
-        //     // just check id existed
-        //     return _exists(token.tokenId);
-        // }
-
-        (address targetTokenAddress, uint256 targetTokenId) = getTarget(token);
-
-        // may be a root token, should check have source/child token or not
-        if (targetTokenAddress == address(0)) {
-            // if token have no source/child token, it not in this contract(and it also not a root token)
-            return _source[token.tokenAddress][token.tokenId].length() > 0;
-        } else {
-            // target parent is not address(0), so it should have this token
-            // return _source[targetTokenAddress][targetTokenId].length() > 0;
-            return
-                _source[targetTokenAddress][targetTokenId].contains(
-                    keccak256(abi.encode(token.tokenAddress, token.tokenId))
-                );
-        }
-    }
-
-    function _haveTarget(ERC721Token memory token)
-        internal
-        view
-        returns (bool)
-    {
-        (address targetTokenAddress, ) = getTarget(token);
-
-        if (targetTokenAddress == address(0)) {
-            return false;
-        }
-        return true;
-    }
-
-    // what is a root token?
-    // 1. no target node
-    // 2. have source node
-    function _isRootToken(ERC721Token memory token)
-        internal
-        view
-        returns (bool)
-    {
-        if (
-            !_haveTarget(token) &&
-            _source[token.tokenAddress][token.tokenId].length() > 0
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    // check whether ancestorToken is descendantToken's ancestor
-    function _isAncestor(
-        ERC721Token memory descendantToken,
-        ERC721Token memory ancestorToken
-    ) public view returns (bool) {
-        if (!_checkItemsExists(descendantToken)) {
-            return false;
-        }
-
-        if (_isRootToken(descendantToken)) {
-            return false;
-        }
-
-        (address _targetTokenAddress, uint256 _targetTokenId) = getTarget(
-            descendantToken
-        );
-
-        bool isAncestor = false;
-
-        while (!isAncestor) {
-            if (
-                _targetTokenAddress == ancestorToken.tokenAddress &&
-                _targetTokenId == ancestorToken.tokenId
-            ) {
-                isAncestor = true;
-            }
-
-            if (
-                _isRootToken(ERC721Token(_targetTokenAddress, _targetTokenId))
-            ) {
-                break;
-            }
-
-            (_targetTokenAddress, _targetTokenId) = getTarget(
-                ERC721Token(_targetTokenAddress, _targetTokenId)
-            );
-        }
-
-        return isAncestor;
-    }
-
     function findRootToken(ERC721Token memory token)
         public
         view
@@ -227,6 +72,20 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         ];
         tokenAddress = t.tokenAddress;
         tokenId = t.tokenId;
+    }
+
+    function balanceOfERC721(
+        ERC721Token memory targetToken,
+        ERC721Token memory erc721Token
+    ) external view override returns (uint256) {
+        return
+            _source[targetToken.tokenAddress][targetToken.tokenId].contains(
+                keccak256(
+                    abi.encode(erc721Token.tokenAddress, erc721Token.tokenId)
+                )
+            )
+                ? 1
+                : 0;
     }
 
     function link(
@@ -373,11 +232,155 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         emit Unlinked(to, sourceToken);
     }
 
-    // function safeMint(address to) external {
-    //     uint256 tokenId = _lastTokenId.current();
-    //     _lastTokenId.increment();
-    //     _safeMint(to, tokenId);
-    // }
+    function _isERC721AndExists(ERC721Token memory token)
+        internal
+        view
+        returns (bool)
+    {
+        // Although can use try catch here, it's better to check is erc721 token in dapp.
+        return
+            IERC165(token.tokenAddress).supportsInterface(
+                type(IERC721).interfaceId
+            )
+                ? IERC721(token.tokenAddress).ownerOf(token.tokenId) !=
+                    address(0)
+                : false;
+    }
+
+    function _addSource(
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
+    ) private {
+        bytes32 _sourceToken = keccak256(
+            abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
+        );
+        _source[targetToken.tokenAddress][targetToken.tokenId].add(
+            _sourceToken
+        );
+    }
+
+    function _removeSource(
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
+    ) internal {
+        bytes32 _sourceToken = keccak256(
+            abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
+        );
+        _source[targetToken.tokenAddress][targetToken.tokenId].remove(
+            _sourceToken
+        );
+    }
+
+    function _addTarget(
+        ERC721Token memory sourceToken,
+        ERC721Token memory targetToken
+    ) internal {
+        _target[sourceToken.tokenAddress][sourceToken.tokenId] = ERC721Token(
+            targetToken.tokenAddress,
+            targetToken.tokenId
+        );
+    }
+
+    function _removeTarget(ERC721Token memory sourceToken) internal {
+        delete _target[sourceToken.tokenAddress][sourceToken.tokenId];
+    }
+
+    function _checkItemsExists(ERC721Token memory token)
+        internal
+        view
+        returns (bool)
+    {
+        if (token.tokenAddress == address(0)) {
+            return false;
+        }
+
+        (address targetTokenAddress, uint256 targetTokenId) = getTarget(token);
+
+        // may be a root token, should check have source/child token or not
+        if (targetTokenAddress == address(0)) {
+            // if token have no source/child token, it not in this contract(and it also not a root token)
+            return _source[token.tokenAddress][token.tokenId].length() > 0;
+        } else {
+            // target parent is not address(0), so it should have this token
+            // return _source[targetTokenAddress][targetTokenId].length() > 0;
+            return
+                _source[targetTokenAddress][targetTokenId].contains(
+                    keccak256(abi.encode(token.tokenAddress, token.tokenId))
+                );
+        }
+    }
+
+    function _haveTarget(ERC721Token memory token)
+        internal
+        view
+        returns (bool)
+    {
+        (address targetTokenAddress, ) = getTarget(token);
+
+        if (targetTokenAddress == address(0)) {
+            return false;
+        }
+        return true;
+    }
+
+    // what is a root token?
+    // 1. no target node
+    // 2. have source node
+    function _isRootToken(ERC721Token memory token)
+        internal
+        view
+        returns (bool)
+    {
+        if (
+            !_haveTarget(token) &&
+            _source[token.tokenAddress][token.tokenId].length() > 0
+        ) {
+            return true;
+        }
+
+        return false;
+    }
+
+    // check whether ancestorToken is descendantToken's ancestor
+    function _isAncestor(
+        ERC721Token memory descendantToken,
+        ERC721Token memory ancestorToken
+    ) internal view returns (bool) {
+        if (!_checkItemsExists(descendantToken)) {
+            return false;
+        }
+
+        if (_isRootToken(descendantToken)) {
+            return false;
+        }
+
+        (address _targetTokenAddress, uint256 _targetTokenId) = getTarget(
+            descendantToken
+        );
+
+        bool isAncestor = false;
+
+        while (!isAncestor) {
+            if (
+                _targetTokenAddress == ancestorToken.tokenAddress &&
+                _targetTokenId == ancestorToken.tokenId
+            ) {
+                isAncestor = true;
+            }
+
+            if (
+                _isRootToken(ERC721Token(_targetTokenAddress, _targetTokenId))
+            ) {
+                break;
+            }
+
+            (_targetTokenAddress, _targetTokenId) = getTarget(
+                ERC721Token(_targetTokenAddress, _targetTokenId)
+            );
+        }
+
+        return isAncestor;
+    }
 
     function _beforeLink(
         address from,

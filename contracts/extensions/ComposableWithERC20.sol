@@ -24,6 +24,15 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
             super.supportsInterface(interfaceId);
     }
 
+    function balanceOfERC20(
+        ERC721Token memory targetToken,
+        address erc20Address
+    ) public view override returns (uint256 balance) {
+        balance = _balancesOfERC20[targetToken.tokenAddress][
+            targetToken.tokenId
+        ][erc20Address];
+    }
+
     function linkERC20(
         address erc20Address,
         uint256 amount,
@@ -72,7 +81,6 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
             targetToken.tokenAddress != address(0),
             "target/parent token address should not be zero address"
         );
-        
 
         _beforeUpdateERC20Target(
             erc20Address,
@@ -183,13 +191,4 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         uint256 amount,
         ERC721Token memory targetToken
     ) internal virtual {}
-
-    function balanceOfERC20(
-        ERC721Token memory targetToken,
-        address erc20Address
-    ) public view returns (uint256 balance) {
-        balance = _balancesOfERC20[targetToken.tokenAddress][
-            targetToken.tokenId
-        ][erc20Address];
-    }
 }

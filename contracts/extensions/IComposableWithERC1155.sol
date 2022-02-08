@@ -29,6 +29,11 @@ interface IComposableWithERC1155 is IERC1155Receiver, IComposable {
         ERC721Token targetToken
     );
 
+    function balanceOfERC1155(
+        ERC721Token memory targetToken,
+        ERC1155Token memory erc1155Token
+    ) external view returns (uint256 balance);
+
     function linkERC1155(
         ERC1155Token memory erc1155Token,
         uint256 amount,
@@ -49,8 +54,5 @@ interface IComposableWithERC1155 is IERC1155Receiver, IComposable {
         ERC721Token memory targetToken
     ) external;
 
-    function balanceOfERC1155(
-        ERC721Token memory targetToken,
-        ERC1155Token memory erc1155Token
-    ) external view returns (uint256 balance);
+    
 }
