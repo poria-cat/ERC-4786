@@ -16,18 +16,23 @@ interface IComposable is IERC165, IERC721Receiver {
     event Linked(
         address from,
         ERC721Token sourceToken,
-        ERC721Token targetToken
+        ERC721Token targetToken,
+        bytes data
     );
 
     /**
      * @dev Emited when sourceToken change target nft to targetToken.
      */
-    event TargetUpdated(ERC721Token sourceToken, ERC721Token targetToken);
+    event TargetUpdated(
+        ERC721Token sourceToken,
+        ERC721Token targetToken,
+        bytes data
+    );
 
     /**
      * Emited when sourceToken unlinked to `to`.
      */
-    event Unlinked(address to, ERC721Token sourceToken);
+    event Unlinked(address to, ERC721Token sourceToken, bytes data);
 
     function findRootToken(ERC721Token memory token)
         external
@@ -46,13 +51,19 @@ interface IComposable is IERC165, IERC721Receiver {
 
     function link(
         ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external;
 
     function updateTarget(
         ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external;
 
-    function unlink(address to, ERC721Token memory sourceToken) external;
+    function unlink(
+        address to,
+        ERC721Token memory sourceToken,
+        bytes memory data
+    ) external;
 }

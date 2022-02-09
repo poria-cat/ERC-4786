@@ -40,7 +40,8 @@ abstract contract ComposableWithERC1155 is
     function linkERC1155(
         ERC1155Token memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external override {
         require(
             targetToken.tokenAddress != address(0),
@@ -65,14 +66,15 @@ abstract contract ComposableWithERC1155 is
         uint256 oldBalance = balanceOfERC1155(targetToken, erc1155Token);
         _setBalanceOfERC1155(targetToken, erc1155Token, oldBalance + amount);
 
-        emit ERC1155Linked(msg.sender, erc1155Token, amount, targetToken);
+        emit ERC1155Linked(msg.sender, erc1155Token, amount, targetToken, data);
     }
 
     function updateERC1155Target(
         ERC1155Token memory erc1155Token,
         uint256 amount,
         ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external override {
         require(
             sourceToken.tokenAddress != address(0),
@@ -125,7 +127,8 @@ abstract contract ComposableWithERC1155 is
             erc1155Token,
             amount,
             sourceToken,
-            targetToken
+            targetToken,
+            data
         );
     }
 
@@ -133,7 +136,8 @@ abstract contract ComposableWithERC1155 is
         address to,
         ERC1155Token memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external override {
         require(to != address(0), "can't unlink to zero address");
 
@@ -167,7 +171,7 @@ abstract contract ComposableWithERC1155 is
             ""
         );
 
-        emit ERC1155Unlinked(to, erc1155Token, amount, targetToken);
+        emit ERC1155Unlinked(to, erc1155Token, amount, targetToken, data);
     }
 
     function _setBalanceOfERC1155(

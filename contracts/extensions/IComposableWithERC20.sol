@@ -8,19 +8,22 @@ interface IComposableWithERC20 is IComposable {
         address from,
         address erc20Address,
         uint256 amount,
-        ERC721Token targetToken
+        ERC721Token targetToken,
+        bytes data
     );
     event ERC20TargetUpdated(
         address erc20Address,
         uint256 amount,
         ERC721Token sourceToken,
-        ERC721Token targetToken
+        ERC721Token targetToken,
+        bytes data
     );
     event ERC20Unlinked(
         address to,
         address erc20Address,
         uint256 amount,
-        ERC721Token targetToken
+        ERC721Token targetToken,
+        bytes data
     );
 
     function balanceOfERC20(
@@ -31,20 +34,23 @@ interface IComposableWithERC20 is IComposable {
     function linkERC20(
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external;
 
     function updateERC20Target(
         address erc20Address,
         uint256 amount,
         ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external;
 
     function unlinkERC20(
         address to,
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external;
 }

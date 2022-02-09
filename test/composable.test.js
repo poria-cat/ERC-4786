@@ -49,12 +49,12 @@ describe("Test Composable", function () {
       let sourceToken = [mockNFT.address, testTokenId0];
       let targetToken = [targetNFT.address, linkedTokenId1];
 
-      await composable.link(sourceToken, targetToken);
+      await composable.link(sourceToken, targetToken, []);
 
       sourceToken = [mockNFT.address, testTokenId1];
       targetToken = [mockNFT.address, testTokenId0];
 
-      await composable.link(sourceToken, targetToken);
+      await composable.link(sourceToken, targetToken, []);
 
       const rootToken = await composable.findRootToken([
         mockNFT.address,
@@ -77,9 +77,9 @@ describe("Test Composable", function () {
       const sourceToken = [mockNFT.address, testTokenId1];
       const targetToken = [mockNFT.address, testTokenId0];
 
-      await composable.link(sourceToken, targetToken);
+      await composable.link(sourceToken, targetToken, []);
       await expectRevert(
-        composable.link(targetToken, sourceToken),
+        composable.link(targetToken, sourceToken, []),
         "source token is ancestor token"
       );
     });
@@ -93,7 +93,8 @@ describe("Test Composable", function () {
       await expectRevert(
         composable.link(
           [mockNFT.address, testTokenId0],
-          [targetNFT.address, linkedTokenId0]
+          [targetNFT.address, linkedTokenId0],
+          []
         ),
         "ERC721: transfer caller is not owner nor approved"
       );
@@ -111,7 +112,8 @@ describe("Test Composable", function () {
       await expectRevert(
         composable.link(
           [mockNFT.address, testTokenId0],
-          [targetNFT.address, linkedTokenId0]
+          [targetNFT.address, linkedTokenId0],
+          []
         ),
         "ERC721: transfer of token that is not own"
       );
@@ -125,11 +127,11 @@ describe("Test Composable", function () {
       const targetToken = [composable.address, linkedTokenId0];
 
       await expectRevert(
-        composable.link(sourceToken, targetToken),
+        composable.link(sourceToken, targetToken, []),
         "target/parent token not ERC721 token or not exist"
       );
       await expectRevert(
-        composable.link(targetToken, sourceToken),
+        composable.link(targetToken, sourceToken, []),
         "source/child token not ERC721 token or not exist"
       );
     });
@@ -147,7 +149,8 @@ describe("Test Composable", function () {
       // link test NFT 0  to target nft 1
       await composable.link(
         [mockNFT.address, testTokenId0],
-        [targetNFT.address, linkedTokenId1]
+        [targetNFT.address, linkedTokenId1],
+        []
       );
 
       let root = await composable.findRootToken([
@@ -160,7 +163,8 @@ describe("Test Composable", function () {
 
       await composable.updateTarget(
         [mockNFT.address, testTokenId0],
-        [targetNFT.address, linkedTokenId0]
+        [targetNFT.address, linkedTokenId0],
+        []
       );
 
       root = await composable.findRootToken([mockNFT.address, testTokenId0]);
@@ -180,13 +184,15 @@ describe("Test Composable", function () {
 
       await composable.link(
         [mockNFT.address, testTokenId0],
-        [targetNFT.address, linkedTokenId1]
+        [targetNFT.address, linkedTokenId1],
+        []
       );
 
       await expectRevert(
         composable.updateTarget(
           [targetNFT.address, linkedTokenId1],
-          [mockNFT.address, testTokenId0]
+          [mockNFT.address, testTokenId0],
+          []
         ),
         "source token is ancestor token"
       );
@@ -202,7 +208,8 @@ describe("Test Composable", function () {
 
       await composable.link(
         [mockNFT.address, testTokenId0],
-        [targetNFT.address, linkedTokenId1]
+        [targetNFT.address, linkedTokenId1],
+        []
       );
 
       expectRevert(
@@ -210,7 +217,8 @@ describe("Test Composable", function () {
           .connect(accounts[1])
           .updateTarget(
             [mockNFT.address, testTokenId0],
-            [targetNFT.address, linkedTokenId0]
+            [targetNFT.address, linkedTokenId0],
+            []
           ),
         "caller is not owner of source/child token"
       );
@@ -225,13 +233,15 @@ describe("Test Composable", function () {
 
       await composable.link(
         [mockNFT.address, testTokenId0],
-        [targetNFT.address, linkedTokenId0]
+        [targetNFT.address, linkedTokenId0],
+        []
       );
 
       await expectRevert(
         composable.updateTarget(
           [mockNFT.address, testTokenId0],
-          [composable.address, linkedTokenId0]
+          [composable.address, linkedTokenId0],
+          []
         ),
         "target/parent token not ERC721 token or not exist"
       );
@@ -250,18 +260,21 @@ describe("Test Composable", function () {
       // parent NFT 1 => test NFT 0
       await composable.link(
         [mockNFT.address, testTokenId0],
-        [targetNFT.address, linkedTokenId1]
+        [targetNFT.address, linkedTokenId1],
+        []
       );
       // parent NFT 1 => test NFT 0 => test NFT 1
       await composable.link(
         [mockNFT.address, testTokenId1],
-        [mockNFT.address, testTokenId0]
+        [mockNFT.address, testTokenId0],
+        []
       );
 
-      await composable.unlink(accounts[1].address, [
-        mockNFT.address,
-        testTokenId1,
-      ]);
+      await composable.unlink(
+        accounts[1].address,
+        [mockNFT.address, testTokenId1],
+        []
+      );
     });
 
     it("can't unlink not own", async function () {
@@ -272,12 +285,13 @@ describe("Test Composable", function () {
 
       await composable.link(
         [mockNFT.address, testTokenId0],
-        [targetNFT.address, linkedTokenId0]
+        [targetNFT.address, linkedTokenId0],
+        []
       );
       await expectRevert(
         composable
           .connect(accounts[1])
-          .unlink(accounts[1].address, [mockNFT.address, testTokenId0]),
+          .unlink(accounts[1].address, [mockNFT.address, testTokenId0], []),
         "caller is not owner of source/child token"
       );
     });
@@ -289,17 +303,22 @@ describe("Test Composable", function () {
       await mockNFT.setApprovalForAll(composable.address, true);
 
       await expectRevert(
-        composable.unlink(accounts[0].address, [mockNFT.address, testTokenId0]),
+        composable.unlink(
+          accounts[0].address,
+          [mockNFT.address, testTokenId0],
+          []
+        ),
         "source/child token not in contract"
       );
     });
 
     it("can't unlink to zero address", async () => {
       await expectRevert(
-        composable.unlink(constants.ZERO_ADDRESS, [
-          mockNFT.address,
-          testTokenId0,
-        ]),
+        composable.unlink(
+          constants.ZERO_ADDRESS,
+          [mockNFT.address, testTokenId0],
+          []
+        ),
         "can't unlink to zero address"
       );
     });
@@ -317,22 +336,26 @@ describe("Test Composable", function () {
       // 1. link to contract
       await composable.link(
         [mockNFT.address, testTokenId0],
-        [targetNFT.address, linkedTokenId0]
+        [targetNFT.address, linkedTokenId0],
+        []
       );
       // 2. link to last
       await composable.link(
         [mockNFT.address, testTokenId1],
-        [mockNFT.address, testTokenId0]
+        [mockNFT.address, testTokenId0],
+        []
       );
       // 3. unlink
-      await composable.unlink(accounts[0].address, [
-        mockNFT.address,
-        testTokenId0,
-      ]);
+      await composable.unlink(
+        accounts[0].address,
+        [mockNFT.address, testTokenId0],
+        []
+      );
       // 4. link
       await composable.link(
         [mockNFT.address, 2],
-        [mockNFT.address, testTokenId0]
+        [mockNFT.address, testTokenId0],
+        []
       );
     });
   });

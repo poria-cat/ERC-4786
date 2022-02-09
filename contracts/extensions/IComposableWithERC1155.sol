@@ -14,19 +14,22 @@ interface IComposableWithERC1155 is IERC1155Receiver, IComposable {
         address from,
         ERC1155Token erc1155Token,
         uint256 amount,
-        ERC721Token targetToken
+        ERC721Token targetToken,
+        bytes data
     );
     event ERC1155TargetUpdated(
         ERC1155Token erc1155Token,
         uint256 amount,
         ERC721Token sourceToken,
-        ERC721Token targetToken
+        ERC721Token targetToken,
+        bytes data
     );
     event ERC1155Unlinked(
         address to,
         ERC1155Token erc1155Token,
         uint256 amount,
-        ERC721Token targetToken
+        ERC721Token targetToken,
+        bytes data
     );
 
     function balanceOfERC1155(
@@ -37,22 +40,23 @@ interface IComposableWithERC1155 is IERC1155Receiver, IComposable {
     function linkERC1155(
         ERC1155Token memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external;
 
     function updateERC1155Target(
         ERC1155Token memory erc1155Token,
         uint256 amount,
         ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external;
 
     function unlinkERC1155(
         address to,
         ERC1155Token memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external;
-
-    
 }

@@ -90,7 +90,8 @@ contract Composable is ERC165, ERC721Holder, IComposable {
 
     function link(
         ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external override {
         require(
             targetToken.tokenAddress != address(0),
@@ -126,12 +127,13 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         _addSource(sourceToken, targetToken);
         _addTarget(sourceToken, targetToken);
 
-        emit Linked(msg.sender, sourceToken, targetToken);
+        emit Linked(msg.sender, sourceToken, targetToken, data);
     }
 
     function updateTarget(
         ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external override {
         require(
             targetToken.tokenAddress != address(0),
@@ -184,13 +186,14 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         _addSource(sourceToken, targetToken);
         _addTarget(sourceToken, targetToken);
 
-        emit TargetUpdated(sourceToken, targetToken);
+        emit TargetUpdated(sourceToken, targetToken, data);
     }
 
-    function unlink(address to, ERC721Token memory sourceToken)
-        external
-        override
-    {
+    function unlink(
+        address to,
+        ERC721Token memory sourceToken,
+        bytes memory data
+    ) external override {
         require(to != address(0), "can't unlink to zero address");
 
         _beforeUnlink(to, sourceToken);
@@ -229,7 +232,7 @@ contract Composable is ERC165, ERC721Holder, IComposable {
             sourceToken.tokenId
         );
 
-        emit Unlinked(to, sourceToken);
+        emit Unlinked(to, sourceToken, data);
     }
 
     function _isERC721AndExists(ERC721Token memory token)

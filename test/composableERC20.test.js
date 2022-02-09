@@ -49,7 +49,12 @@ describe("Test ERC20 Composable", function () {
 
       const targetToken = [targetNFT.address, linkedTokenId0];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken,
+        []
+      );
 
       expect(
         await composable.balanceOfERC20(targetToken, mockERC20.address)
@@ -64,11 +69,16 @@ describe("Test ERC20 Composable", function () {
       await mockERC20.approve(composable.address, mintedERC20);
       await mockNFT.setApprovalForAll(composable.address, true);
 
-      await composable.link([mockNFT.address, 0], [targetNFT.address, 0]);
+      await composable.link([mockNFT.address, 0], [targetNFT.address, 0], []);
 
       const targetToken = [targetNFT.address, linkedTokenId0];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken,
+        []
+      );
 
       expect(
         await composable.balanceOfERC20(targetToken, mockERC20.address)
@@ -84,7 +94,7 @@ describe("Test ERC20 Composable", function () {
       const targetToken = [targetNFT.address, linkedTokenId0];
 
       await expectRevert(
-        composable.linkERC20(mockERC20.address, mintedERC20, targetToken),
+        composable.linkERC20(mockERC20.address, mintedERC20, targetToken, []),
         "ERC20: transfer amount exceeds balance"
       );
     });
@@ -96,7 +106,7 @@ describe("Test ERC20 Composable", function () {
 
       const targetToken = [constants.ZERO_ADDRESS, linkedTokenId0];
       await expectRevert(
-        composable.linkERC20(mockERC20.address, mintedERC20, targetToken),
+        composable.linkERC20(mockERC20.address, mintedERC20, targetToken, []),
         "target/parent token address should not be zero address"
       );
     });
@@ -114,12 +124,18 @@ describe("Test ERC20 Composable", function () {
       const targetToken1 = [targetNFT.address, linkedTokenId0];
       const targetToken2 = [targetNFT.address, linkedTokenId1];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken1,
+        []
+      );
       await composable.updateERC20Target(
         mockERC20.address,
         mintedERC20,
         targetToken1,
-        targetToken2
+        targetToken2,
+        []
       );
 
       expect(
@@ -141,14 +157,20 @@ describe("Test ERC20 Composable", function () {
       const targetToken = [targetNFT.address, linkedTokenId0];
       const sourceToken = [mockNFT.address, 0];
 
-      await composable.link(sourceToken, targetToken);
-      await composable.linkERC20(mockERC20.address, mintedERC20, sourceToken);
+      await composable.link(sourceToken, targetToken, []);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        sourceToken,
+        []
+      );
 
       await composable.updateERC20Target(
         mockERC20.address,
         mintedERC20,
         sourceToken,
-        targetToken
+        targetToken,
+        []
       );
     });
 
@@ -163,13 +185,19 @@ describe("Test ERC20 Composable", function () {
       const targetToken1 = [targetNFT.address, linkedTokenId0];
       const targetToken2 = [targetNFT.address, linkedTokenId1];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken1,
+        []
+      );
       await expectRevert(
         composable.updateERC20Target(
           mockERC20.address,
           BigNumber.from(`${110 * 1e18}`),
           targetToken1,
-          targetToken2
+          targetToken2,
+          []
         ),
         "transfer amount exceeds balance"
       );
@@ -186,7 +214,12 @@ describe("Test ERC20 Composable", function () {
       const targetToken1 = [targetNFT.address, linkedTokenId0];
       const targetToken2 = [targetNFT.address, linkedTokenId1];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken1,
+        []
+      );
       await expectRevert(
         composable
           .connect(accounts[1])
@@ -194,7 +227,8 @@ describe("Test ERC20 Composable", function () {
             mockERC20.address,
             mintedERC20,
             targetToken1,
-            targetToken2
+            targetToken2,
+            []
           ),
         "caller not owner of source token"
       );
@@ -210,13 +244,19 @@ describe("Test ERC20 Composable", function () {
       const targetToken1 = [targetNFT.address, linkedTokenId0];
       const targetToken2 = [constants.ZERO_ADDRESS, linkedTokenId1];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken1,
+        []
+      );
       await expectRevert(
         composable.updateERC20Target(
           mockERC20.address,
           mintedERC20,
           targetToken1,
-          targetToken2
+          targetToken2,
+          []
         ),
         "target/parent token address should not be zero address"
       );
@@ -233,13 +273,19 @@ describe("Test ERC20 Composable", function () {
       const targetToken1 = [targetNFT.address, linkedTokenId0];
       const targetToken2 = [composable.address, linkedTokenId0];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken1);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken1,
+        []
+      );
       await expectRevert(
         composable.updateERC20Target(
           mockERC20.address,
           mintedERC20,
           targetToken1,
-          targetToken2
+          targetToken2,
+          []
         ),
         "target/parent token not ERC721 token or not exist"
       );
@@ -255,12 +301,18 @@ describe("Test ERC20 Composable", function () {
 
       const targetToken = [targetNFT.address, linkedTokenId0];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken,
+        []
+      );
       await composable.unlinkERC20(
         accounts[0].address,
         mockERC20.address,
         mintedERC20,
-        targetToken
+        targetToken,
+        []
       );
 
       expect(
@@ -279,7 +331,12 @@ describe("Test ERC20 Composable", function () {
 
       const targetToken = [targetNFT.address, linkedTokenId0];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken,
+        []
+      );
 
       await expectRevert(
         composable
@@ -288,7 +345,8 @@ describe("Test ERC20 Composable", function () {
             accounts[0].address,
             mockERC20.address,
             mintedERC20,
-            targetToken
+            targetToken,
+            []
           ),
         "caller not owner of target token"
       );
@@ -302,14 +360,20 @@ describe("Test ERC20 Composable", function () {
 
       const targetToken = [targetNFT.address, linkedTokenId0];
 
-      await composable.linkERC20(mockERC20.address, mintedERC20, targetToken);
+      await composable.linkERC20(
+        mockERC20.address,
+        mintedERC20,
+        targetToken,
+        []
+      );
 
       await expectRevert(
         composable.unlinkERC20(
           accounts[0].address,
           mockERC20.address,
           BigNumber.from(`${110 * 1e18}`),
-          targetToken
+          targetToken,
+          []
         ),
         "transfer amount exceeds balance"
       );

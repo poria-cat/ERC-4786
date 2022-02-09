@@ -45,7 +45,7 @@ describe("Test ERC1155 Composable", function () {
       const erc1155Token = [mockERC1155.address, 0];
       const targetToken = [targetNFT.address, 0];
 
-      await composable.linkERC1155(erc1155Token, 5, targetToken);
+      await composable.linkERC1155(erc1155Token, 5, targetToken, []);
 
       expect(
         await composable.balanceOfERC1155(targetToken, erc1155Token)
@@ -64,7 +64,7 @@ describe("Test ERC1155 Composable", function () {
       const targetToken = [composable.address, 0];
 
       await expectRevert(
-        composable.linkERC1155(erc1155Token, 5, targetToken),
+        composable.linkERC1155(erc1155Token, 5, targetToken, []),
         "target/parent token not ERC721 token or not exist"
       );
     });
@@ -82,11 +82,14 @@ describe("Test ERC1155 Composable", function () {
       const erc1155Token = [mockERC1155.address, 0];
       const targetToken = [targetNFT.address, 0];
 
-      await composable.linkERC1155(erc1155Token, 5, targetToken);
-      await composable.updateERC1155Target(erc1155Token, 5, targetToken, [
-        targetNFT.address,
-        1,
-      ]);
+      await composable.linkERC1155(erc1155Token, 5, targetToken, []);
+      await composable.updateERC1155Target(
+        erc1155Token,
+        5,
+        targetToken,
+        [targetNFT.address, 1],
+        []
+      );
 
       expect(
         await composable.balanceOfERC1155(targetToken, erc1155Token)
@@ -107,13 +110,16 @@ describe("Test ERC1155 Composable", function () {
       const erc1155Token = [mockERC1155.address, 0];
       const targetToken = [targetNFT.address, 0];
 
-      await composable.linkERC1155(erc1155Token, 5, targetToken);
+      await composable.linkERC1155(erc1155Token, 5, targetToken, []);
 
       await expectRevert(
-        composable.updateERC1155Target(erc1155Token, 10, targetToken, [
-          targetNFT.address,
-          1,
-        ]),
+        composable.updateERC1155Target(
+          erc1155Token,
+          10,
+          targetToken,
+          [targetNFT.address, 1],
+          []
+        ),
         "transfer amount exceeds balance"
       );
     });
@@ -129,15 +135,18 @@ describe("Test ERC1155 Composable", function () {
       const erc1155Token = [mockERC1155.address, 0];
       const targetToken = [targetNFT.address, 0];
 
-      await composable.linkERC1155(erc1155Token, 5, targetToken);
+      await composable.linkERC1155(erc1155Token, 5, targetToken, []);
 
       await expectRevert(
         composable
           .connect(accounts[1])
-          .updateERC1155Target(erc1155Token, 10, targetToken, [
-            targetNFT.address,
-            1,
-          ]),
+          .updateERC1155Target(
+            erc1155Token,
+            10,
+            targetToken,
+            [targetNFT.address, 1],
+            []
+          ),
         "caller not owner of source token"
       );
     });
@@ -155,7 +164,7 @@ describe("Test ERC1155 Composable", function () {
       const erc1155Token = [mockERC1155.address, 0];
       const targetToken = [targetNFT.address, 0];
 
-      await composable.linkERC1155(erc1155Token, 5, targetToken);
+      await composable.linkERC1155(erc1155Token, 5, targetToken, []);
 
       expect(
         await composable.balanceOfERC1155(targetToken, erc1155Token)
@@ -165,7 +174,8 @@ describe("Test ERC1155 Composable", function () {
         accounts[0].address,
         erc1155Token,
         5,
-        targetToken
+        targetToken,
+        []
       );
 
       expect(
@@ -184,12 +194,12 @@ describe("Test ERC1155 Composable", function () {
       const erc1155Token = [mockERC1155.address, 0];
       const targetToken = [targetNFT.address, 0];
 
-      await composable.linkERC1155(erc1155Token, 5, targetToken);
+      await composable.linkERC1155(erc1155Token, 5, targetToken, []);
 
       await expectRevert(
         composable
           .connect(accounts[1])
-          .unlinkERC1155(accounts[0].address, erc1155Token, 5, targetToken),
+          .unlinkERC1155(accounts[0].address, erc1155Token, 5, targetToken, []),
         "caller not owner of target token"
       );
     });
@@ -205,14 +215,15 @@ describe("Test ERC1155 Composable", function () {
       const erc1155Token = [mockERC1155.address, 0];
       const targetToken = [targetNFT.address, 0];
 
-      await composable.linkERC1155(erc1155Token, 5, targetToken);
+      await composable.linkERC1155(erc1155Token, 5, targetToken, []);
 
       await expectRevert(
         composable.unlinkERC1155(
           accounts[0].address,
           erc1155Token,
           20,
-          targetToken
+          targetToken,
+          []
         ),
         "transfer amount exceeds balance"
       );

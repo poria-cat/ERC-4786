@@ -36,7 +36,8 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
     function linkERC20(
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external override {
         require(
             targetToken.tokenAddress != address(0),
@@ -64,14 +65,15 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
         _updateBalanceOfERC20(targetToken, erc20Address, oldBalance + amount);
 
-        emit ERC20Linked(msg.sender, erc20Address, amount, targetToken);
+        emit ERC20Linked(msg.sender, erc20Address, amount, targetToken, data);
     }
 
     function updateERC20Target(
         address erc20Address,
         uint256 amount,
         ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external override {
         require(
             sourceToken.tokenAddress != address(0),
@@ -121,7 +123,7 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
             oldTargetBalance + amount
         );
 
-        emit ERC20TargetUpdated(erc20Address, amount, sourceToken, targetToken);
+        emit ERC20TargetUpdated(erc20Address, amount, sourceToken, targetToken, data);
     }
 
     // erc20 as source token, erc721 as target token,
@@ -130,7 +132,8 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         address to,
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken
+        ERC721Token memory targetToken,
+        bytes memory data
     ) external override {
         require(to != address(0), "can't unlink to zero address");
 
@@ -158,7 +161,7 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
 
         IERC20(erc20Address).safeTransfer(to, amount);
 
-        emit ERC20Unlinked(to, erc20Address, amount, targetToken);
+        emit ERC20Unlinked(to, erc20Address, amount, targetToken, data);
     }
 
     function _updateBalanceOfERC20(
