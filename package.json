@@ -1,6 +1,6 @@
 {
   "name": "erc4786",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "ERC-4786 reference implementation",
   "scripts": {
     "test": "npx hardhat test",
