@@ -3,10 +3,10 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "../Composable.sol";
+import "../ERC4786.sol";
 import "./IComposableWithERC20.sol";
 
-abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
+abstract contract ComposableWithERC20 is ERC4786, IComposableWithERC20 {
     using SafeERC20 for IERC20;
 
     // (token => erc20 balance)
@@ -16,7 +16,7 @@ abstract contract ComposableWithERC20 is Composable, IComposableWithERC20 {
         public
         view
         virtual
-        override(IERC165, Composable)
+        override(IERC165, ERC4786)
         returns (bool)
     {
         return

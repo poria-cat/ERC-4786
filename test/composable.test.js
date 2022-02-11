@@ -18,7 +18,7 @@ describe("Test Composable", function () {
   const linkedTokenId1 = 1;
 
   before(async function () {
-    this.Composable = await ethers.getContractFactory("Composable");
+    this.Composable = await ethers.getContractFactory("ERC4786");
     this.TargetNFT = await ethers.getContractFactory("MockNFT");
     this.MockNFT = await ethers.getContractFactory("MockNFT");
 

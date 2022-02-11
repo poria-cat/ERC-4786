@@ -10,9 +10,9 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "hardhat/console.sol";
 
-import "./IComposable.sol";
+import "./IERC4786.sol";
 
-contract Composable is ERC165, ERC721Holder, IComposable {
+contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
@@ -36,7 +36,7 @@ contract Composable is ERC165, ERC721Holder, IComposable {
         returns (bool)
     {
         return
-            interfaceId == type(IComposable).interfaceId ||
+            interfaceId == type(IERC4786).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

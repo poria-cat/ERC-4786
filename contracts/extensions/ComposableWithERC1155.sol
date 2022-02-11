@@ -4,12 +4,12 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
-import "../Composable.sol";
+import "../ERC4786.sol";
 import "./IComposableWithERC1155.sol";
 
 abstract contract ComposableWithERC1155 is
     ERC1155Holder,
-    Composable,
+    ERC4786,
     IComposableWithERC1155
 {
     // token => erc1155 => balance
@@ -20,7 +20,7 @@ abstract contract ComposableWithERC1155 is
         public
         view
         virtual
-        override(IERC165, ERC1155Receiver, Composable)
+        override(IERC165, ERC1155Receiver, ERC4786)
         returns (bool)
     {
         return

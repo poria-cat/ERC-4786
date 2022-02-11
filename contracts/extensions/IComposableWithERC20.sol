@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import "../IComposable.sol";
+import "../IERC4786.sol";
 
-interface IComposableWithERC20 is IComposable {
+interface IComposableWithERC20 is IERC4786 {
     /**
      * @dev Emited when ERC-20 token linked to target token
      */

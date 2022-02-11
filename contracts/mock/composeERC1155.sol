@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../Composable.sol";
+import "../ERC4786.sol";
 import "../extensions/ComposableWithERC1155.sol";
 
 contract ComposeableERC1155Mock is ComposableWithERC1155 {

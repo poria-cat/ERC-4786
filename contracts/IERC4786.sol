@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
  * @title ERC-4786: Compose Common Token With ERC-721 Standard
  * @dev See https://eips.ethereum.org/EIPS/eip-4786
  */
-interface IComposable is IERC165, IERC721Receiver {
+interface IERC4786 is IERC165, IERC721Receiver {
     // Used to represent an ERC-721 Token
     struct ERC721Token {
         address tokenAddress;

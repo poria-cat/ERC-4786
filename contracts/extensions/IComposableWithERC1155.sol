@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import "../IComposable.sol";
+import "../IERC4786.sol";
 
-interface IComposableWithERC1155 is IERC1155Receiver, IComposable {
+interface IComposableWithERC1155 is IERC1155Receiver, IERC4786 {
     // as ERC-1155 token
     struct ERC1155Token {
         address tokenAddress;
