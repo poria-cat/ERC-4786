@@ -5,12 +5,12 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 import "../ERC4786.sol";
-import "./IComposableWithERC1155.sol";
+import "./IERC4786WithERC1155.sol";
 
-abstract contract ComposableWithERC1155 is
+abstract contract ERC4786WithERC1155 is
     ERC1155Holder,
     ERC4786,
-    IComposableWithERC1155
+    IERC4786WithERC1155
 {
     // token => erc1155 => balance
     // mapping(address => mapping(uint256 => mapping (address => mapping(uint256 => uint256))) _balances;
@@ -24,7 +24,7 @@ abstract contract ComposableWithERC1155 is
         returns (bool)
     {
         return
-            interfaceId == type(IComposableWithERC1155).interfaceId ||
+            interfaceId == type(IERC4786WithERC1155).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
