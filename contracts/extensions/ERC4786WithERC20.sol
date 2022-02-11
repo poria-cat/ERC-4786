@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../ERC4786.sol";
-import "./IComposableWithERC20.sol";
+import "./IERC4786WithERC20.sol";
 
-abstract contract ComposableWithERC20 is ERC4786, IComposableWithERC20 {
+abstract contract ERC4786WithERC20 is ERC4786, IERC4786WithERC20 {
     using SafeERC20 for IERC20;
 
     // (token => erc20 balance)
@@ -20,7 +20,7 @@ abstract contract ComposableWithERC20 is ERC4786, IComposableWithERC20 {
         returns (bool)
     {
         return
-            interfaceId == type(IComposableWithERC20).interfaceId ||
+            interfaceId == type(IERC4786WithERC20).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 

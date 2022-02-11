@@ -18,7 +18,7 @@ describe("Test ERC20 Composable", function () {
   const mintedERC20 = BigNumber.from(`${1e18 * 100}`);
 
   before(async function () {
-    this.Composable = await ethers.getContractFactory("ComposeableERC20Mock");
+    this.Composable = await ethers.getContractFactory("ERC4786WithERC20");
     this.MockERC20 = await ethers.getContractFactory("MockERC20");
     this.TargetNFT = await ethers.getContractFactory("MockNFT");
     this.MockNFT = await ethers.getContractFactory("MockNFT");

@@ -3,12 +3,12 @@
 pragma solidity ^0.8.0;
 
 import "../ERC4786.sol";
-import "../extensions/ComposableWithERC20.sol";
+import "../extensions/ERC4786WithERC20.sol";
 import "../extensions/ComposableWithERC1155.sol";
 
 contract ComposeableAllTokenType is
     ERC4786,
-    ComposableWithERC20,
+    ERC4786WithERC20,
     ComposableWithERC1155
 {
     // constructor(string memory _tokenName, string memory _tokenSymbol)
@@ -19,7 +19,7 @@ contract ComposeableAllTokenType is
         public
         view
         virtual
-        override(ERC4786, ComposableWithERC20, ComposableWithERC1155)
+        override(ERC4786, ERC4786WithERC20, ComposableWithERC1155)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
