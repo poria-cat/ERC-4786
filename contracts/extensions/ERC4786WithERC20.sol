@@ -25,7 +25,7 @@ abstract contract ERC4786WithERC20 is ERC4786, IERC4786WithERC20 {
     }
 
     function balanceOfERC20(
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         address erc20Address
     ) public view override returns (uint256 balance) {
         balance = _balancesOfERC20[targetToken.tokenAddress][
@@ -36,7 +36,7 @@ abstract contract ERC4786WithERC20 is ERC4786, IERC4786WithERC20 {
     function linkERC20(
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         bytes memory data
     ) external override {
         require(
@@ -71,8 +71,8 @@ abstract contract ERC4786WithERC20 is ERC4786, IERC4786WithERC20 {
     function updateERC20Target(
         address erc20Address,
         uint256 amount,
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken,
+        NFT memory sourceToken,
+        NFT memory targetToken,
         bytes memory data
     ) external override {
         require(
@@ -132,7 +132,7 @@ abstract contract ERC4786WithERC20 is ERC4786, IERC4786WithERC20 {
         address to,
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         bytes memory data
     ) external override {
         require(to != address(0), "can't unlink to zero address");
@@ -165,7 +165,7 @@ abstract contract ERC4786WithERC20 is ERC4786, IERC4786WithERC20 {
     }
 
     function _updateBalanceOfERC20(
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         address erc20Address,
         uint256 newBalance
     ) internal {
@@ -178,20 +178,20 @@ abstract contract ERC4786WithERC20 is ERC4786, IERC4786WithERC20 {
         address from,
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken
+        NFT memory targetToken
     ) internal virtual {}
 
     function _beforeUpdateERC20Target(
         address erc20Address,
         uint256 amount,
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        NFT memory sourceToken,
+        NFT memory targetToken
     ) internal virtual {}
 
     function _beforeUnlinkERC20(
         address to,
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken
+        NFT memory targetToken
     ) internal virtual {}
 }

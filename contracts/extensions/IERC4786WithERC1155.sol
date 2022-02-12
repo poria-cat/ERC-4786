@@ -5,20 +5,14 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "../IERC4786.sol";
 
 interface IERC4786WithERC1155 is IERC1155Receiver, IERC4786 {
-    // as ERC-1155 token
-    struct ERC1155Token {
-        address tokenAddress;
-        uint256 tokenId;
-    }
-
     /**
      * @dev Emited when link a ERC-1155 token to ERC-721 token
      */
     event ERC1155Linked(
         address from,
-        ERC1155Token erc1155Token,
+        NFT erc1155Token,
         uint256 amount,
-        ERC721Token targetToken,
+        NFT targetToken,
         bytes data
     );
 
@@ -26,10 +20,10 @@ interface IERC4786WithERC1155 is IERC1155Receiver, IERC4786 {
      * @dev Emited when ERC-1155 token's target token updated
      */
     event ERC1155TargetUpdated(
-        ERC1155Token erc1155Token,
+        NFT erc1155Token,
         uint256 amount,
-        ERC721Token sourceToken,
-        ERC721Token targetToken,
+        NFT sourceToken,
+        NFT targetToken,
         bytes data
     );
 
@@ -38,19 +32,19 @@ interface IERC4786WithERC1155 is IERC1155Receiver, IERC4786 {
      */
     event ERC1155Unlinked(
         address to,
-        ERC1155Token erc1155Token,
+        NFT erc1155Token,
         uint256 amount,
-        ERC721Token targetToken,
+        NFT targetToken,
         bytes data
     );
 
     /**
      * @dev get the balance of ERC-1155 token linked to the target token
      */
-    function balanceOfERC1155(
-        ERC721Token memory targetToken,
-        ERC1155Token memory erc1155Token
-    ) external view returns (uint256 balance);
+    function balanceOfERC1155(NFT memory targetToken, NFT memory erc1155Token)
+        external
+        view
+        returns (uint256 balance);
 
     /**
      * @dev link ERC-1155 token to target token
@@ -60,9 +54,9 @@ interface IERC4786WithERC1155 is IERC1155Receiver, IERC4786 {
      * @param data information on token changes or other information.
      */
     function linkERC1155(
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         bytes memory data
     ) external;
 
@@ -70,10 +64,10 @@ interface IERC4786WithERC1155 is IERC1155Receiver, IERC4786 {
      * @dev update ERC-1155 token's target token
      */
     function updateERC1155Target(
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken,
+        NFT memory sourceToken,
+        NFT memory targetToken,
         bytes memory data
     ) external;
 
@@ -82,9 +76,9 @@ interface IERC4786WithERC1155 is IERC1155Receiver, IERC4786 {
      */
     function unlinkERC1155(
         address to,
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         bytes memory data
     ) external;
 }

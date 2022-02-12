@@ -29,8 +29,8 @@ abstract contract ERC4786WithERC1155 is
     }
 
     function balanceOfERC1155(
-        ERC721Token memory targetToken,
-        ERC1155Token memory erc1155Token
+        NFT memory targetToken,
+        NFT memory erc1155Token
     ) public view override returns (uint256 balance) {
         balance = _balancesOfERC1155[targetToken.tokenAddress][
             targetToken.tokenId
@@ -38,9 +38,9 @@ abstract contract ERC4786WithERC1155 is
     }
 
     function linkERC1155(
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         bytes memory data
     ) external override {
         require(
@@ -70,10 +70,10 @@ abstract contract ERC4786WithERC1155 is
     }
 
     function updateERC1155Target(
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken,
+        NFT memory sourceToken,
+        NFT memory targetToken,
         bytes memory data
     ) external override {
         require(
@@ -134,9 +134,9 @@ abstract contract ERC4786WithERC1155 is
 
     function unlinkERC1155(
         address to,
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         bytes memory data
     ) external override {
         require(to != address(0), "can't unlink to zero address");
@@ -175,8 +175,8 @@ abstract contract ERC4786WithERC1155 is
     }
 
     function _setBalanceOfERC1155(
-        ERC721Token memory targetToken,
-        ERC1155Token memory erc1155Token,
+        NFT memory targetToken,
+        NFT memory erc1155Token,
         uint256 newBalance
     ) internal {
         _balancesOfERC1155[targetToken.tokenAddress][targetToken.tokenId][
@@ -186,22 +186,22 @@ abstract contract ERC4786WithERC1155 is
 
     function _beforeLinkERC1155(
         address from,
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken
+        NFT memory targetToken
     ) internal virtual {}
 
     function _beforeUpdateERC1155Target(
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        NFT memory sourceToken,
+        NFT memory targetToken
     ) internal virtual {}
 
     function _beforeUnlinkERC1155(
         address to,
-        ERC1155Token memory erc1155Token,
+        NFT memory erc1155Token,
         uint256 amount,
-        ERC721Token memory targetToken
+        NFT memory targetToken
     ) internal virtual {}
 }

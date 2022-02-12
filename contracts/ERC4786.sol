@@ -22,7 +22,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     // target: ending node, parent node
 
     //target/parent(one to one): ((source/child token address + id) -> (target/parent token address  + target/parent id))
-    mapping(address => mapping(uint256 => ERC721Token)) _target;
+    mapping(address => mapping(uint256 => NFT)) _target;
     // source/child(one to many): (target/parent token address + id => Set(keccak256(abi.encode(target/parent tokenaddress , target/parent id))))
     mapping(address => mapping(uint256 => EnumerableSet.Bytes32Set)) _source;
 
@@ -40,7 +40,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
             super.supportsInterface(interfaceId);
     }
 
-    function findRootToken(ERC721Token memory token)
+    function findRootToken(NFT memory token)
         public
         view
         override
@@ -53,21 +53,21 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
         (address targetTokenAddress, uint256 targetTokenId) = getTarget(token);
 
         // find token have no target
-        while (_haveTarget(ERC721Token(targetTokenAddress, targetTokenId))) {
+        while (_haveTarget(NFT(targetTokenAddress, targetTokenId))) {
             (targetTokenAddress, targetTokenId) = getTarget(
-                ERC721Token(targetTokenAddress, targetTokenId)
+                NFT(targetTokenAddress, targetTokenId)
             );
         }
         return (targetTokenAddress, targetTokenId);
     }
 
-    function getTarget(ERC721Token memory sourceToken)
+    function getTarget(NFT memory sourceToken)
         public
         view
         override
         returns (address tokenAddress, uint256 tokenId)
     {
-        ERC721Token memory t = _target[sourceToken.tokenAddress][
+        NFT memory t = _target[sourceToken.tokenAddress][
             sourceToken.tokenId
         ];
         tokenAddress = t.tokenAddress;
@@ -75,8 +75,8 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     }
 
     function balanceOfERC721(
-        ERC721Token memory targetToken,
-        ERC721Token memory erc721Token
+        NFT memory targetToken,
+        NFT memory erc721Token
     ) external view override returns (uint256) {
         return
             _source[targetToken.tokenAddress][targetToken.tokenId].contains(
@@ -89,8 +89,8 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     }
 
     function link(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken,
+        NFT memory sourceToken,
+        NFT memory targetToken,
         bytes memory data
     ) external override {
         require(
@@ -131,8 +131,8 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     }
 
     function updateTarget(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken,
+        NFT memory sourceToken,
+        NFT memory targetToken,
         bytes memory data
     ) external override {
         require(
@@ -161,7 +161,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
         );
 
         require(
-            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
+            _checkItemsExists(NFT(rootTokenAddress, rootTokenId)),
             "wrong token"
         );
         // maybe root token source other contract NFT, so use down code
@@ -181,7 +181,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
 
         _removeSource(
             sourceToken,
-            ERC721Token(_targetTokenAddress, _targetTokenId)
+            NFT(_targetTokenAddress, _targetTokenId)
         );
         _addSource(sourceToken, targetToken);
         _addTarget(sourceToken, targetToken);
@@ -191,7 +191,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
 
     function unlink(
         address to,
-        ERC721Token memory sourceToken,
+        NFT memory sourceToken,
         bytes memory data
     ) external override {
         require(to != address(0), "can't unlink to zero address");
@@ -208,7 +208,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
         );
 
         require(
-            _checkItemsExists(ERC721Token(rootTokenAddress, rootTokenId)),
+            _checkItemsExists(NFT(rootTokenAddress, rootTokenId)),
             "wrong token"
         );
         require(
@@ -222,7 +222,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
 
         _removeSource(
             sourceToken,
-            ERC721Token(targetTokenAddress, targetTokenId)
+            NFT(targetTokenAddress, targetTokenId)
         );
         _removeTarget(sourceToken);
 
@@ -235,7 +235,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
         emit Unlinked(to, sourceToken, data);
     }
 
-    function _isERC721AndExists(ERC721Token memory token)
+    function _isERC721AndExists(NFT memory token)
         internal
         view
         returns (bool)
@@ -251,8 +251,8 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     }
 
     function _addSource(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        NFT memory sourceToken,
+        NFT memory targetToken
     ) private {
         bytes32 _sourceToken = keccak256(
             abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
@@ -263,8 +263,8 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     }
 
     function _removeSource(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        NFT memory sourceToken,
+        NFT memory targetToken
     ) internal {
         bytes32 _sourceToken = keccak256(
             abi.encode(sourceToken.tokenAddress, sourceToken.tokenId)
@@ -275,20 +275,20 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     }
 
     function _addTarget(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        NFT memory sourceToken,
+        NFT memory targetToken
     ) internal {
-        _target[sourceToken.tokenAddress][sourceToken.tokenId] = ERC721Token(
+        _target[sourceToken.tokenAddress][sourceToken.tokenId] = NFT(
             targetToken.tokenAddress,
             targetToken.tokenId
         );
     }
 
-    function _removeTarget(ERC721Token memory sourceToken) internal {
+    function _removeTarget(NFT memory sourceToken) internal {
         delete _target[sourceToken.tokenAddress][sourceToken.tokenId];
     }
 
-    function _checkItemsExists(ERC721Token memory token)
+    function _checkItemsExists(NFT memory token)
         internal
         view
         returns (bool)
@@ -313,7 +313,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
         }
     }
 
-    function _haveTarget(ERC721Token memory token)
+    function _haveTarget(NFT memory token)
         internal
         view
         returns (bool)
@@ -329,7 +329,7 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
     // what is a root token?
     // 1. no target node
     // 2. have source node
-    function _isRootToken(ERC721Token memory token)
+    function _isRootToken(NFT memory token)
         internal
         view
         returns (bool)
@@ -346,8 +346,8 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
 
     // check whether ancestorToken is descendantToken's ancestor
     function _isAncestor(
-        ERC721Token memory descendantToken,
-        ERC721Token memory ancestorToken
+        NFT memory descendantToken,
+        NFT memory ancestorToken
     ) internal view returns (bool) {
         if (!_checkItemsExists(descendantToken)) {
             return false;
@@ -372,13 +372,13 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
             }
 
             if (
-                _isRootToken(ERC721Token(_targetTokenAddress, _targetTokenId))
+                _isRootToken(NFT(_targetTokenAddress, _targetTokenId))
             ) {
                 break;
             }
 
             (_targetTokenAddress, _targetTokenId) = getTarget(
-                ERC721Token(_targetTokenAddress, _targetTokenId)
+                NFT(_targetTokenAddress, _targetTokenId)
             );
         }
 
@@ -387,16 +387,16 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
 
     function _beforeLink(
         address from,
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        NFT memory sourceToken,
+        NFT memory targetToken
     ) internal virtual {}
 
     function _beforeUpdateTarget(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken
+        NFT memory sourceToken,
+        NFT memory targetToken
     ) internal virtual {}
 
-    function _beforeUnlink(address to, ERC721Token memory sourceToken)
+    function _beforeUnlink(address to, NFT memory sourceToken)
         internal
         virtual
     {}

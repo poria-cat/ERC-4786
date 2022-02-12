@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
  */
 interface IERC4786 is IERC165, IERC721Receiver {
     // Used to represent an ERC-721 Token
-    struct ERC721Token {
+    struct NFT {
         address tokenAddress;
         uint256 tokenId;
     }
@@ -23,8 +23,8 @@ interface IERC4786 is IERC165, IERC721Receiver {
      */
     event Linked(
         address from,
-        ERC721Token sourceToken,
-        ERC721Token targetToken,
+        NFT sourceToken,
+        NFT targetToken,
         bytes data
     );
 
@@ -32,8 +32,8 @@ interface IERC4786 is IERC165, IERC721Receiver {
      * @dev Emited when sourceToken change target nft to targetToken.
      */
     event TargetUpdated(
-        ERC721Token sourceToken,
-        ERC721Token targetToken,
+        NFT sourceToken,
+        NFT targetToken,
         bytes data
     );
 
@@ -41,13 +41,13 @@ interface IERC4786 is IERC165, IERC721Receiver {
      * @dev Emited when sourceToken unlinked to `to`.
      * @param to unlink sourceToken to one's address
      */
-    event Unlinked(address to, ERC721Token sourceToken, bytes data);
+    event Unlinked(address to, NFT sourceToken, bytes data);
 
     /**
      * @dev find a ERC-721 token's root NFT
      * @param token a ERC-721 token
      */
-    function findRootToken(ERC721Token memory token)
+    function findRootToken(NFT memory token)
         external
         view
         returns (address rootTokenAddress, uint256 rootTokenId);
@@ -56,7 +56,7 @@ interface IERC4786 is IERC165, IERC721Receiver {
      * @dev get a ERC-721 token's target token
      * @param sourceToken  a ERC-721 token
      */
-    function getTarget(ERC721Token memory sourceToken)
+    function getTarget(NFT memory sourceToken)
         external
         view
         returns (address tokenAddress, uint256 tokenId);
@@ -68,8 +68,8 @@ interface IERC4786 is IERC165, IERC721Receiver {
      * @param erc721Token a ERC-721 token
      */
     function balanceOfERC721(
-        ERC721Token memory targetToken,
-        ERC721Token memory erc721Token
+        NFT memory targetToken,
+        NFT memory erc721Token
     ) external view returns (uint256);
 
     /**
@@ -79,8 +79,8 @@ interface IERC4786 is IERC165, IERC721Receiver {
      * @param data can as the order of linking to NFT or other information
      */
     function link(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken,
+        NFT memory sourceToken,
+        NFT memory targetToken,
         bytes memory data
     ) external;
 
@@ -91,8 +91,8 @@ interface IERC4786 is IERC165, IERC721Receiver {
      * @param data an as the order of NFT or other information
      */
     function updateTarget(
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken,
+        NFT memory sourceToken,
+        NFT memory targetToken,
         bytes memory data
     ) external;
 
@@ -104,7 +104,7 @@ interface IERC4786 is IERC165, IERC721Receiver {
      */
     function unlink(
         address to,
-        ERC721Token memory sourceToken,
+        NFT memory sourceToken,
         bytes memory data
     ) external;
 }

@@ -11,7 +11,7 @@ interface IERC4786WithERC20 is IERC4786 {
         address from,
         address erc20Address,
         uint256 amount,
-        ERC721Token targetToken,
+        NFT targetToken,
         bytes data
     );
 
@@ -21,8 +21,8 @@ interface IERC4786WithERC20 is IERC4786 {
     event ERC20TargetUpdated(
         address erc20Address,
         uint256 amount,
-        ERC721Token sourceToken,
-        ERC721Token targetToken,
+        NFT sourceToken,
+        NFT targetToken,
         bytes data
     );
 
@@ -33,7 +33,7 @@ interface IERC4786WithERC20 is IERC4786 {
         address to,
         address erc20Address,
         uint256 amount,
-        ERC721Token targetToken,
+        NFT targetToken,
         bytes data
     );
 
@@ -41,7 +41,7 @@ interface IERC4786WithERC20 is IERC4786 {
      * @dev get the balance of ERC-20 token linked to the target token
      */
     function balanceOfERC20(
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         address erc20Address
     ) external view returns (uint256 balance);
 
@@ -51,7 +51,7 @@ interface IERC4786WithERC20 is IERC4786 {
     function linkERC20(
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         bytes memory data
     ) external;
 
@@ -61,8 +61,8 @@ interface IERC4786WithERC20 is IERC4786 {
     function updateERC20Target(
         address erc20Address,
         uint256 amount,
-        ERC721Token memory sourceToken,
-        ERC721Token memory targetToken,
+        NFT memory sourceToken,
+        NFT memory targetToken,
         bytes memory data
     ) external;
 
@@ -73,7 +73,7 @@ interface IERC4786WithERC20 is IERC4786 {
         address to,
         address erc20Address,
         uint256 amount,
-        ERC721Token memory targetToken,
+        NFT memory targetToken,
         bytes memory data
     ) external;
 }
