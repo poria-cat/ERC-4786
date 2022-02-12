@@ -107,7 +107,7 @@ describe("Test Composable", function () {
         .connect(accounts[1])
         .setApprovalForAll(composable.address, true);
 
-      await targetNFT.safeMint(accounts[0].address);
+      await targetNFT.safeMint(accounts[1].address);
 
       await expectRevert(
         composable.link(
@@ -115,7 +115,7 @@ describe("Test Composable", function () {
           [targetNFT.address, linkedTokenId0],
           []
         ),
-        "ERC721: transfer of token that is not own"
+        "ERC721: transfer from incorrect owner"
       );
     });
 
