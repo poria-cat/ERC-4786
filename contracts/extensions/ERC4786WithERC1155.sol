@@ -28,10 +28,12 @@ abstract contract ERC4786WithERC1155 is
             super.supportsInterface(interfaceId);
     }
 
-    function balanceOfERC1155(
-        NFT memory targetToken,
-        NFT memory erc1155Token
-    ) public view override returns (uint256 balance) {
+    function balanceOfERC1155(NFT memory targetToken, NFT memory erc1155Token)
+        public
+        view
+        override
+        returns (uint256 balance)
+    {
         balance = _balancesOfERC1155[targetToken.tokenAddress][
             targetToken.tokenId
         ][erc1155Token.tokenAddress][erc1155Token.tokenId];
@@ -55,6 +57,9 @@ abstract contract ERC4786WithERC1155 is
             "target/parent token not ERC721 token or not exist"
         );
 
+        uint256 oldBalance = balanceOfERC1155(targetToken, erc1155Token);
+        _setBalanceOfERC1155(targetToken, erc1155Token, oldBalance + amount);
+
         IERC1155(erc1155Token.tokenAddress).safeTransferFrom(
             msg.sender,
             address(this),
@@ -62,9 +67,6 @@ abstract contract ERC4786WithERC1155 is
             amount,
             ""
         );
-
-        uint256 oldBalance = balanceOfERC1155(targetToken, erc1155Token);
-        _setBalanceOfERC1155(targetToken, erc1155Token, oldBalance + amount);
 
         emit ERC1155Linked(msg.sender, erc1155Token, amount, targetToken, data);
     }

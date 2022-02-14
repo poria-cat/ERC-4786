@@ -51,19 +51,14 @@ abstract contract ERC4786WithERC20 is ERC4786, IERC4786WithERC20 {
             "target/parent token not ERC721 token or not exist"
         );
 
-        // require(
-        //     _checkItemsExists(targetToken),
-        //     "target/parent token token not in contract"
-        // );
+        uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
+        _updateBalanceOfERC20(targetToken, erc20Address, oldBalance + amount);
 
         IERC20(erc20Address).safeTransferFrom(
             msg.sender,
             address(this),
             amount
         );
-
-        uint256 oldBalance = balanceOfERC20(targetToken, erc20Address);
-        _updateBalanceOfERC20(targetToken, erc20Address, oldBalance + amount);
 
         emit ERC20Linked(msg.sender, erc20Address, amount, targetToken, data);
     }

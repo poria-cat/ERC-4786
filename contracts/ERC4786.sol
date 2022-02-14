@@ -12,11 +12,7 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "./IERC4786.sol";
 
 contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
-    using Counters for Counters.Counter;
     using EnumerableSet for EnumerableSet.Bytes32Set;
-
-    Counters.Counter private _lastTokenId;
-
     // source: starting node, child node
     // target: ending node, parent node
 
@@ -117,14 +113,14 @@ contract ERC4786 is ERC165, ERC721Holder, IERC4786 {
             "source token is ancestor token"
         );
 
+        _addSource(sourceToken, targetToken);
+        _addTarget(sourceToken, targetToken);
+
         ERC721(sourceToken.tokenAddress).transferFrom(
             msg.sender,
             address(this),
             sourceToken.tokenId
         );
-
-        _addSource(sourceToken, targetToken);
-        _addTarget(sourceToken, targetToken);
 
         emit Linked(msg.sender, sourceToken, targetToken, data);
     }
