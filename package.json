@@ -2,6 +2,7 @@
   "name": "erc4786",
   "version": "0.1.6",
   "description": "ERC-4786 reference implementation",
+  "repository": "https://github.com/poria-cat/ERC-4786.git",
   "scripts": {
     "test": "npx hardhat test",
     "compile": "npx hardhat compile"
