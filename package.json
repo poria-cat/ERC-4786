@@ -1,6 +1,6 @@
 {
   "name": "erc4786",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "ERC-4786 reference implementation",
   "repository": "https://github.com/poria-cat/ERC-4786.git",
   "scripts": {
