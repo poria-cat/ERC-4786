@@ -1,15 +1,18 @@
 {
   "name": "erc4786",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "ERC-4786 reference implementation",
-  "repository": "https://github.com/poria-cat/ERC-4786.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/poria-cat/ERC-4786.git"
+  },
   "scripts": {
     "test": "npx hardhat test",
     "compile": "npx hardhat compile"
   },
   "keywords": [],
   "author": "fuling",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.4",
     "@nomiclabs/hardhat-waffle": "^2.0.2",
